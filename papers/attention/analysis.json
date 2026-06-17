@@ -1,0 +1,82 @@
+{
+  "paper": {
+    "title": "Attention Is All You Need",
+    "authors": [
+      "A. Vaswani"
+    ],
+    "affiliations": [
+      "Google"
+    ],
+    "venue": "NeurIPS",
+    "year": 2017,
+    "url": "https://arxiv.org/abs/1706.03762"
+  },
+  "slug": "attention",
+  "headline": "Self-attention alone, no recurrence, beats RNNs on translation and trains far faster.",
+  "eli5": {
+    "analogy": "a group reading where everyone glances at every other word at once",
+    "text": "Instead of reading word by word, the model looks at all words simultaneously and decides which matter."
+  },
+  "plain_summary": "The Transformer drops recurrence and uses **attention**.",
+  "glossary": [
+    {
+      "term": "Attention",
+      "plain": "A way for the model to weigh which other words matter."
+    }
+  ],
+  "demos": [
+    {
+      "title": "Softmax temperature",
+      "caption": "Drag to sharpen/flatten.",
+      "html": "<input id=t type=range min=1 max=50 value=10><pre id=o></pre><script>var t=document.getElementById('t'),o=document.getElementById('o');function f(){var T=t.value/10,x=[2,1,0].map(v=>Math.exp(v/T)),s=x.reduce((a,b)=>a+b);o.textContent=x.map(v=>(v/s).toFixed(2)).join(' ')}t.oninput=f;f()</script>"
+    }
+  ],
+  "novelty": {
+    "type": "conceptual",
+    "before": "Seq models used recurrence.",
+    "after": "Attention suffices."
+  },
+  "results": [
+    {
+      "claim": "28.4 BLEU on WMT14",
+      "evidence": "new SOTA",
+      "caveat": "single task family"
+    }
+  ],
+  "knowledge_graph": {
+    "nodes": [
+      {
+        "id": "attn",
+        "label": "Attention",
+        "type": "technique"
+      },
+      {
+        "id": "rnn",
+        "label": "RNN",
+        "type": "prior_work"
+      }
+    ],
+    "edges": [
+      {
+        "from": "this_paper",
+        "to": "attn",
+        "label": "builds_on"
+      },
+      {
+        "from": "this_paper",
+        "to": "rnn",
+        "label": "outperforms"
+      }
+    ]
+  },
+  "people": [
+    {
+      "name": "Sam Lee",
+      "role": "ML Researcher, Acme Labs",
+      "why": "Works on attention.",
+      "connection_path": "1st-degree: your connection",
+      "linkedin": null,
+      "search_hint": "Search LinkedIn for 'Sam Lee Acme Labs'"
+    }
+  ]
+}

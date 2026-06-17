@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attention Is All You Need</title>
+<style>
+:root {
+  --bg: #fafaf7;
+  --card: #ffffff;
+  --ink: #1a1a1a;
+  --muted: #6b6b6b;
+  --line: #e8e6e0;
+  --accent: #2d4a8a;
+  --accent-soft: #eef2fa;
+  --warn: #b85c00;
+  --warn-soft: #fdf3e7;
+  --good: #2e6f4a;
+  --good-soft: #ecf5ef;
+  --eli5: #6a3fb5;
+  --eli5-soft: #f1ecfa;
+  --radius: 10px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.55;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+
+.paper-header { margin-bottom: 32px; }
+.paper-header h1 {
+  font-size: 32px; line-height: 1.2; margin: 0 0 12px;
+  letter-spacing: -0.01em; font-weight: 600;
+}
+.byline { color: var(--ink); margin: 4px 0; font-size: 15px; }
+.byline .aff { color: var(--muted); font-size: 13px; }
+.meta { color: var(--muted); font-size: 14px; margin: 4px 0; }
+.links { margin-top: 12px; font-size: 14px; }
+.links a { color: var(--accent); text-decoration: none; margin-right: 4px; }
+.links a:hover { text-decoration: underline; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 20px;
+}
+.card h2 {
+  font-size: 18px; font-weight: 600; margin: 0 0 12px;
+  letter-spacing: -0.005em;
+}
+.card h3 {
+  font-size: 14px; font-weight: 600; margin: 16px 0 6px;
+  text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+}
+.card p { margin: 8px 0; }
+.card ul { margin: 8px 0; padding-left: 20px; }
+.card li { margin: 4px 0; }
+.card code {
+  background: #f3f1ec; padding: 1px 5px; border-radius: 4px;
+  font-size: 0.9em; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); margin-bottom: 8px; font-weight: 600;
+}
+
+.headline {
+  background: var(--accent-soft);
+  border-color: #d4dded;
+}
+.headline p {
+  font-size: 19px; line-height: 1.45; margin: 0;
+  font-weight: 500; color: var(--ink);
+}
+
+.eli5 { background: var(--eli5-soft); border-color: #ddd2f0; }
+.eli5 .label { color: var(--eli5); }
+.eli5 h2 { color: var(--eli5); }
+.analogy { font-size: 17px; line-height: 1.5; }
+.analogy-mark {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  font-weight: 700; color: var(--eli5); display: block; margin-bottom: 2px;
+}
+
+.glossary-item {
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 12px; margin: 6px 0; background: var(--bg);
+}
+.glossary-item summary {
+  cursor: pointer; font-weight: 600; font-size: 14px;
+}
+.glossary-item p { margin: 8px 0 2px; font-size: 14px; color: #333; }
+
+.paper-figure {
+  margin: 12px 0; padding: 12px; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--bg);
+}
+.paper-figure img { max-width: 100%; height: auto; border-radius: 6px; display: block; }
+.paper-figure figcaption { font-size: 14px; color: #333; margin-top: 8px; }
+
+.demo { margin: 14px 0; }
+.demo h3 { color: var(--ink); text-transform: none; letter-spacing: 0; font-size: 15px; }
+.demo-caption { font-size: 14px; color: var(--muted); margin: 4px 0 8px; }
+.demo-frame {
+  width: 100%; min-height: 220px; border: 1px solid var(--line);
+  border-radius: 8px; background: #fff;
+}
+
+.novelty-tag {
+  display: inline-block; padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 500; margin-bottom: 12px;
+  background: var(--accent-soft); color: var(--accent);
+}
+.before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+.before-after > div {
+  padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg);
+}
+.ba-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 600;
+}
+.before-after p { margin: 6px 0 0; font-size: 14px; }
+
+.result-row { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.result-row:last-child { border-bottom: none; }
+.result-row .claim { font-weight: 500; margin: 0 0 6px; }
+.result-row .evidence, .result-row .caveat { font-size: 14px; margin: 4px 0; color: #333; }
+.result-row .caveat { color: var(--warn); }
+.r-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+  font-weight: 600; margin-right: 4px;
+}
+.result-row .evidence .r-label { color: var(--good); }
+.result-row .caveat .r-label   { color: var(--warn); }
+
+.lim-block { margin-bottom: 12px; }
+.lim-unstated {
+  background: var(--warn-soft); border: 1px solid #f0d9bc;
+  padding: 12px 16px; border-radius: 8px;
+}
+
+.feasibility {
+  display: inline-block; padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 500; margin-bottom: 8px;
+  background: var(--good-soft); color: var(--good);
+}
+.feas-quarter, .feas-research-project { background: var(--warn-soft); color: var(--warn); }
+
+.imp-grid { display: grid; gap: 14px; }
+.imp-block {
+  padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg);
+}
+.imp-block h3 { margin-top: 0; }
+
+.people-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;
+}
+.person-card {
+  padding: 16px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg);
+}
+.person-card h3 {
+  margin: 0 0 4px; font-size: 15px; text-transform: none;
+  letter-spacing: 0; color: var(--ink);
+}
+.person-card .role { font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+.conn-path {
+  font-size: 12px; font-weight: 600; color: var(--good);
+  background: var(--good-soft); border-radius: 6px;
+  padding: 4px 8px; margin: 0 0 8px; display: inline-block;
+}
+.person-card .why { font-size: 14px; margin: 0 0 10px; }
+.li-link {
+  color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500;
+}
+.li-link:hover { text-decoration: underline; }
+.li-hint { color: var(--muted); font-size: 13px; font-style: italic; }
+
+.graph-help { color: var(--muted); font-size: 13px; margin-top: 0; }
+.kg-container {
+  height: 480px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg); margin-top: 12px;
+}
+
+.notes-editor {
+  min-height: 140px; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg); font-size: 15px; line-height: 1.6;
+  outline: none; white-space: pre-wrap;
+}
+.notes-editor:focus { border-color: var(--accent); }
+.notes-editor:empty::before {
+  content: attr(data-placeholder); color: var(--muted);
+}
+.notes-help { font-size: 13px; color: var(--muted); margin-top: 0; }
+.notes-status { font-weight: 600; margin-left: 6px; }
+.notes-actions { margin-top: 10px; display: flex; gap: 8px; }
+.notes-actions button {
+  font: inherit; font-size: 13px; padding: 6px 14px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 8px; background: #fff;
+}
+.notes-actions button:hover { border-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 640px) {
+  .container { padding: 32px 16px 64px; }
+  .paper-header h1 { font-size: 26px; }
+  .before-after { grid-template-columns: 1fr; }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/dist/vis-network.min.js"></script>
+</head>
+<body>
+<div class="container">
+
+    <header class="paper-header">
+      <h1>Attention Is All You Need</h1>
+      <p class="byline">A. Vaswani <span class='aff'>(Google)</span></p>
+      <p class="meta">NeurIPS · 2017</p>
+      <p class="links"><a href="https://arxiv.org/abs/1706.03762" target="_blank">Paper ↗</a></p>
+    </header>
+    
+
+    <section class="card headline">
+      <div class="label">TL;DR</div>
+      <p>Self-attention alone, no recurrence, beats RNNs on translation and trains far faster.</p>
+    </section>
+    
+
+    <section class="card eli5">
+      <div class="label">No background needed</div>
+      <h2>Explain it simply</h2>
+      <p class="analogy"><span class="analogy-mark">Think of it like</span> a group reading where everyone glances at every other word at once</p><p>Instead of reading word by word, the model looks at all words simultaneously and decides which matter.</p>
+    </section>
+    
+
+    <section class="card">
+      
+      <h2>Plain-language summary</h2>
+      <p>The Transformer drops recurrence and uses <strong>attention</strong>.</p>
+    </section>
+    
+
+    <section class="card glossary">
+      <div class="label">Tap any term</div>
+      <h2>Jargon decoder</h2>
+      
+          <details class="glossary-item">
+            <summary>Attention</summary>
+            <p>A way for the model to weigh which other words matter.</p>
+          </details>
+        
+    </section>
+    
+
+
+    <section class="card demos">
+      <div class="label">Interactive</div>
+      <h2>Play with it</h2>
+      
+          <div class="demo">
+            <h3>Softmax temperature</h3>
+            <p class="demo-caption">Drag to sharpen/flatten.</p>
+            <iframe class="demo-frame" sandbox="allow-scripts"
+                    srcdoc="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&#x27;utf-8&#x27;&gt;&lt;style&gt;body{font-family:system-ui,sans-serif;margin:12px;color:#1a1a1a;}input,button,select{font:inherit;margin:4px 0;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;input id=t type=range min=1 max=50 value=10&gt;&lt;pre id=o&gt;&lt;/pre&gt;&lt;script&gt;var t=document.getElementById(&#x27;t&#x27;),o=document.getElementById(&#x27;o&#x27;);function f(){var T=t.value/10,x=[2,1,0].map(v=&gt;Math.exp(v/T)),s=x.reduce((a,b)=&gt;a+b);o.textContent=x.map(v=&gt;(v/s).toFixed(2)).join(&#x27; &#x27;)}t.oninput=f;f()&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;" loading="lazy"></iframe>
+          </div>
+        
+    </section>
+    
+
+    <section class="card">
+      
+      <h2>What&#x27;s actually new</h2>
+      
+      <div class="novelty-tag novelty-conceptual">Conceptually novel</div>
+      <div class="before-after">
+        <div><span class="ba-label">Before</span><p>Seq models used recurrence.</p></div>
+        <div><span class="ba-label">After</span><p>Attention suffices.</p></div>
+      </div>
+    
+    </section>
+    
+
+
+    <section class="card">
+      
+      <h2>Results — and what they support</h2>
+      
+          <div class="result-row">
+            <p class="claim">28.4 BLEU on WMT14</p>
+            <p class="evidence"><span class="r-label">Evidence</span> new SOTA</p>
+            <p class="caveat"><span class="r-label">Caveat</span> single task family</p>
+          </div>
+        
+    </section>
+    
+
+
+
+
+    <section class="card">
+      
+      <h2>Knowledge graph</h2>
+      
+        <p class="graph-help">Drag to pan, scroll to zoom, click a node to highlight its connections.</p>
+        <div id="kg" class="kg-container"></div>
+        <script id="graph-data" type="application/json">{"nodes": [{"id": "attn", "label": "Attention", "type": "technique"}, {"id": "rnn", "label": "RNN", "type": "prior_work"}], "edges": [{"from": "this_paper", "to": "attn", "label": "builds_on"}, {"from": "this_paper", "to": "rnn", "label": "outperforms"}]}</script>
+        
+    </section>
+    
+
+    <section class="card">
+      <div class="label">Starts from your network</div>
+      <h2>People worth reaching out to</h2>
+      <div class="people-grid">
+          <div class="person-card">
+            <h3>Sam Lee</h3>
+            <p class="role">ML Researcher, Acme Labs</p>
+            <p class="conn-path">1st-degree: your connection</p>
+            <p class="why">Works on attention.</p>
+            <span class="li-hint">Search LinkedIn for &#x27;Sam Lee Acme Labs&#x27;</span>
+          </div>
+        </div>
+    </section>
+    
+
+    <section class="card notes-card" data-slug="attention">
+      <div class="label">Your notes</div>
+      <h2>Notes</h2>
+      <p class="notes-help">
+        These persist. Served via <code>serve.py</code> they save to
+        <code>papers/attention/notes.md</code>;
+        opened as a file they save to your browser.
+        <span id="notes-status" class="notes-status"></span>
+      </p>
+      <div id="notes" class="notes-editor"
+           data-placeholder="Type your notes here… (Markdown)"></div>
+      <div class="notes-actions">
+        <button id="notes-save" type="button">Save</button>
+        <button id="notes-download" type="button">Download notes.md</button>
+      </div>
+    </section>
+    
+</div>
+<script>
+(function() {
+  var el = document.getElementById('graph-data');
+  var container = document.getElementById('kg');
+  if (!el || !container || typeof vis === 'undefined') return;
+  var data = JSON.parse(el.textContent);
+
+  var typeColor = {
+    technique:  { bg: '#eef2fa', bd: '#2d4a8a' },
+    dataset:    { bg: '#ecf5ef', bd: '#2e6f4a' },
+    prior_work: { bg: '#f3eee6', bd: '#7a5a2a' },
+    claim:      { bg: '#fdf3e7', bd: '#b85c00' },
+    domain:     { bg: '#f0ecf5', bd: '#5e3d8a' },
+    concept:    { bg: '#f0f0f0', bd: '#555555' }
+  };
+
+  var nodes = data.nodes.map(function(n) {
+    var c = typeColor[n.type] || typeColor.concept;
+    return {
+      id: n.id,
+      label: n.label,
+      color: { background: c.bg, border: c.bd, highlight: { background: c.bd, border: c.bd } },
+      font: { color: '#1a1a1a', size: 14, face: 'system-ui' },
+      shape: 'box',
+      margin: 10,
+      borderWidth: 1.5
+    };
+  });
+
+  var edges = data.edges.map(function(e) {
+    return {
+      from: e.from, to: e.to,
+      label: e.label,
+      arrows: 'to',
+      color: { color: '#bcb9b0', highlight: '#2d4a8a' },
+      font: { size: 11, color: '#6b6b6b', strokeWidth: 0, align: 'middle' },
+      smooth: { type: 'continuous' }
+    };
+  });
+
+  new vis.Network(container, { nodes: nodes, edges: edges }, {
+    physics: { stabilization: { iterations: 200 }, barnesHut: { springLength: 150 } },
+    interaction: { hover: true, tooltipDelay: 200 }
+  });
+})();
+</script>
+<script>
+(function() {
+  var notes = document.getElementById('notes');
+  var card = document.querySelector('.notes-card');
+  if (!notes || !card) return;
+  var slug = card.getAttribute('data-slug') || (document.title || 'paper');
+  var statusEl = document.getElementById('notes-status');
+  var saveBtn = document.getElementById('notes-save');
+  var dlBtn = document.getElementById('notes-download');
+  var lsKey = 'paper-notes:' + slug;
+  var served = location.protocol === 'http:' || location.protocol === 'https:';
+
+  function setStatus(msg) { if (statusEl) statusEl.textContent = msg; }
+
+  function load() {
+    if (served) {
+      fetch('/api/notes?slug=' + encodeURIComponent(slug))
+        .then(function(r) { return r.ok ? r.text() : ''; })
+        .then(function(text) { if (text) notes.textContent = text; })
+        .catch(function() {
+          var s = localStorage.getItem(lsKey); if (s) notes.textContent = s;
+        });
+    } else {
+      var s = localStorage.getItem(lsKey); if (s) notes.textContent = s;
+    }
+  }
+
+  function save() {
+    var text = notes.textContent || '';
+    localStorage.setItem(lsKey, text);
+    if (served) {
+      setStatus('saving…');
+      fetch('/api/notes?slug=' + encodeURIComponent(slug), {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: text
+      }).then(function(r) {
+        setStatus(r.ok ? 'saved to notes.md ✓' : 'save failed (kept in browser)');
+      }).catch(function() { setStatus('offline — kept in browser'); });
+    } else {
+      setStatus('saved in browser ✓');
+    }
+  }
+
+  function download() {
+    var blob = new Blob([notes.textContent || ''], { type: 'text/markdown' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'notes.md';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  notes.setAttribute('contenteditable', 'true');
+  var t;
+  notes.addEventListener('input', function() {
+    setStatus('unsaved…');
+    clearTimeout(t);
+    t = setTimeout(save, 800);
+  });
+  if (saveBtn) saveBtn.addEventListener('click', save);
+  if (dlBtn) dlBtn.addEventListener('click', download);
+  load();
+})();
+</script>
+</body>
+</html>

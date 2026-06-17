@@ -1,0 +1,9 @@
+Notes:
+"When exporting your connections, the real file from LinkedIn looks exactly like this (a few notes lines, then the header). Copy your real export to data/connections.csv — that path is gitignored. All rows below are synthetic."
+
+First Name,Last Name,URL,Email Address,Company,Position,Connected On
+Sam,Lee,https://www.linkedin.com/in/sample-sam,,Acme Labs,Machine Learning Researcher,14 Mar 2023
+Riya,Nair,https://www.linkedin.com/in/sample-riya,,Globex University,PhD Student in NLP,02 Jan 2022
+Jordan,Park,https://www.linkedin.com/in/sample-jordan,,Initech,Staff Software Engineer,21 Sep 2021
+Mina,Okafor,https://www.linkedin.com/in/sample-mina,,Hooli Research,"Research Scientist, Computer Vision",07 Nov 2024
+Diego,Alvarez,https://www.linkedin.com/in/sample-diego,,Stark Industries,Product Manager,30 Jun 2020

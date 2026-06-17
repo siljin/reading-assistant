@@ -1,0 +1,252 @@
+{
+  "paper": {
+    "title": "Towards Conversational Diagnostic AI",
+    "authors": [
+      "Tao Tu",
+      "Anil Palepu",
+      "Mike Schaekermann",
+      "Khaled Saab",
+      "Ryutaro Tanno",
+      "Karan Singhal",
+      "Alan Karthikesalingam",
+      "Vivek Natarajan"
+    ],
+    "affiliations": [
+      "Google Research / Google DeepMind",
+      "Google Research / Google DeepMind",
+      "Google Research / Google DeepMind",
+      "Google Research / Google DeepMind",
+      "Google Research / Google DeepMind",
+      "Google Research / Google DeepMind",
+      "Google Research / Google DeepMind",
+      "Google Research / Google DeepMind"
+    ],
+    "venue": "arXiv (later Nature, 2025)",
+    "year": 2024,
+    "url": "https://arxiv.org/abs/2401.05654",
+    "code_url": "",
+    "data_url": null
+  },
+  "slug": "amie",
+  "headline": "An LLM trained by talking to itself (simulated doctor + simulated patient) out-scored real primary-care physicians on diagnostic accuracy and most bedside-manner axes in a blinded, text-only OSCE study.",
+  "eli5": {
+    "analogy": "a medical student who practices by role-playing both the doctor AND the patient, millions of times, grading every conversation, until the doctor half gets very good.",
+    "text": "AMIE is a chatbot built to take a patient's history and reach a diagnosis through conversation. To get good without endless real patients, it practices in a simulator where one copy plays the patient and another plays the doctor, and an automatic grader gives feedback. When tested against 20 real doctors over text chats, specialists rated AMIE higher on diagnosis and on most communication qualities."
+  },
+  "plain_summary": "Good diagnosis starts with a good conversation: asking the right questions, in the right order, with empathy. The authors built **AMIE**, an LLM tuned specifically for that diagnostic dialogue. The trick is **self-play**: instead of needing huge volumes of real doctor-patient transcripts, AMIE practices inside a simulated clinic \u2014 one model instance acts as the patient, another as the doctor, and an automated critic scores each exchange and feeds back corrections. This lets training scale across many diseases and contexts cheaply. They then ran a **randomized, double-blind crossover OSCE** (a standardized clinical exam format) with validated patient-actors across 149 scenarios from Canada, the UK and India, pitting AMIE against 20 primary-care physicians over text chat. Specialists scored AMIE ahead on 28 of 32 axes; patient-actors on 24 of 26. The catch: it's **text-only**, the doctors were boxed into an unfamiliar chat interface, and 'beats doctors on a chat exam' is not 'safe to deploy in a real clinic.'",
+  "glossary": [
+    {
+      "term": "AMIE",
+      "plain": "Articulate Medical Intelligence Explorer \u2014 the diagnostic chatbot this paper introduces."
+    },
+    {
+      "term": "Self-play",
+      "plain": "The model practices against copies of itself \u2014 here, one plays patient, one plays doctor \u2014 so it can train without endless real data."
+    },
+    {
+      "term": "OSCE",
+      "plain": "Objective Structured Clinical Examination \u2014 a standardized role-play exam used to test real medical trainees."
+    },
+    {
+      "term": "Double-blind crossover",
+      "plain": "Neither raters nor participants know who's the AI vs the human, and each case is seen under both arms \u2014 a strong fairness setup."
+    },
+    {
+      "term": "PCP",
+      "plain": "Primary Care Physician \u2014 the human baseline AMIE was compared against."
+    },
+    {
+      "term": "History-taking",
+      "plain": "The back-and-forth questioning a clinician uses to gather symptoms before diagnosing."
+    }
+  ],
+  "demos": [
+    {
+      "title": "Who scored higher, by rater",
+      "caption": "Toggle the rater. Bars show how many evaluation axes AMIE led on. (Specialists: 28 of 32. Patient-actors: 24 of 26.)",
+      "html": "<button id=b>Switch rater</button><div id=lbl style='font-weight:600;margin:8px 0'></div><div id=bar></div><script>var R=[{n:'Specialist physicians',a:28,t:32},{n:'Patient actors',a:24,t:26}],i=0;function draw(){var r=R[i];document.getElementById('lbl').textContent=r.n+': AMIE led on '+r.a+' of '+r.t+' axes';var pct=Math.round(r.a/r.t*100);document.getElementById('bar').innerHTML='<div style=\"background:#ecf5ef;border-radius:6px;overflow:hidden\"><div style=\"width:'+pct+'%;background:#2e6f4a;color:#fff;padding:6px 10px;border-radius:6px\">'+pct+'% of axes</div></div>'}document.getElementById('b').onclick=function(){i=(i+1)%R.length;draw()};draw()</script>"
+    }
+  ],
+  "novelty": {
+    "type": "methodological",
+    "before": "Medical LLMs were tuned on static QA benchmarks (e.g. USMLE-style), which don't test the live, multi-turn skill of taking a history through conversation.",
+    "after": "A self-play simulated-clinic training loop + a multi-axis clinical eval, with a blinded head-to-head against real PCPs showing the system can lead on diagnosis and communication in a text OSCE."
+  },
+  "methods": "- **Base**: an LLM further tuned for diagnostic dialogue.\n- **Self-play loop**: a simulated environment where the model role-plays patient and doctor; an automated critic scores exchanges and feeds back, letting training scale across diseases/specialties without proportional real data.\n- **Inference**: a chain-of-reasoning strategy to structure history-taking and differential diagnosis over turns.\n- **Evaluation**: randomized, double-blind crossover OSCE; 149 scenarios (Canada/UK/India); 20 PCPs as baseline; validated patient-actors; rated by specialists and the actors on 30+ clinically meaningful axes.",
+  "results": [
+    {
+      "claim": "AMIE led on diagnostic accuracy vs PCPs.",
+      "evidence": "Top differential diagnosis accuracy higher under specialist rating.",
+      "caveat": "Text-chat only; PCPs may underperform vs their normal in-person workflow."
+    },
+    {
+      "claim": "AMIE rated higher on 28 of 32 axes by specialists.",
+      "evidence": "Blinded specialist scoring across history-taking, management, communication, empathy.",
+      "caveat": "Axes are correlated; '28 of 32' is not 28 independent wins."
+    },
+    {
+      "claim": "AMIE rated higher on 24 of 26 axes by patient-actors.",
+      "evidence": "Patient-actor post-consult ratings.",
+      "caveat": "Actors, not real patients; novelty/verbosity of an AI may inflate perceived empathy."
+    }
+  ],
+  "limitations": {
+    "stated": [
+      "Text-only chat, not multimodal or real clinical setting.",
+      "Patient-actors and OSCE scenarios, not real patients.",
+      "Not a deployment-ready or regulated system."
+    ],
+    "unstated": [
+      "PCPs were constrained to an unfamiliar text interface \u2014 the human baseline may be artificially weak.",
+      "No real safety/harm outcome measured; 'preferred on chat' \u2260 'safe to act on.'",
+      "Self-play critic defines 'good' \u2014 risk of optimizing to the grader rather than to real clinical correctness.",
+      "Geographic/scenario coverage is curated; tail and rare presentations untested.",
+      "Empathy ratings can reward fluent verbosity, which an LLM produces by default."
+    ]
+  },
+  "implementation": {
+    "feasibility": "research project",
+    "requirements": [
+      "Frontier LLM access + heavy tuning compute",
+      "A simulated-patient environment and an automated clinical critic",
+      "Clinically validated eval scenarios and rater panels (expensive, slow)",
+      "Regulatory/ethics pathway for anything beyond research"
+    ],
+    "cheapest_validation": "Reproduce just the self-play loop on one specialty with an open LLM and a simple rubric critic; measure whether simulated history-taking quality improves over turns before touching any human eval."
+  },
+  "implications": {
+    "research": [
+      "Self-play for dialogue skills (not just games/math) is viable \u2014 expect it applied to other expert-conversation domains.",
+      "Pushes eval away from static QA toward multi-turn, multi-axis clinical assessment."
+    ],
+    "practice": [
+      "Don't read this as 'AI beats doctors' \u2014 read it as 'structured AI history-taking is now strong enough to prototype triage/intake tools' under heavy human oversight.",
+      "The constrained-interface caveat matters: any product comparison must match the human's real workflow, not a chat box."
+    ]
+  },
+  "knowledge_graph": {
+    "nodes": [
+      {
+        "id": "amie",
+        "label": "AMIE",
+        "type": "technique"
+      },
+      {
+        "id": "llm",
+        "label": "Base LLM",
+        "type": "prior_work"
+      },
+      {
+        "id": "selfplay",
+        "label": "Self-play simulated clinic",
+        "type": "technique"
+      },
+      {
+        "id": "critic",
+        "label": "Automated critic",
+        "type": "technique"
+      },
+      {
+        "id": "osce",
+        "label": "OSCE eval",
+        "type": "dataset"
+      },
+      {
+        "id": "pcp",
+        "label": "Primary care physicians",
+        "type": "concept"
+      },
+      {
+        "id": "dx",
+        "label": "Diagnostic accuracy",
+        "type": "claim"
+      },
+      {
+        "id": "empathy",
+        "label": "Communication & empathy",
+        "type": "claim"
+      },
+      {
+        "id": "dialogue",
+        "label": "Diagnostic dialogue",
+        "type": "domain"
+      }
+    ],
+    "edges": [
+      {
+        "from": "amie",
+        "to": "llm",
+        "label": "builds_on"
+      },
+      {
+        "from": "amie",
+        "to": "selfplay",
+        "label": "trained_via"
+      },
+      {
+        "from": "selfplay",
+        "to": "critic",
+        "label": "requires"
+      },
+      {
+        "from": "amie",
+        "to": "osce",
+        "label": "evaluated_on"
+      },
+      {
+        "from": "amie",
+        "to": "pcp",
+        "label": "outperforms"
+      },
+      {
+        "from": "amie",
+        "to": "dx",
+        "label": "improves"
+      },
+      {
+        "from": "amie",
+        "to": "empathy",
+        "label": "improves"
+      },
+      {
+        "from": "amie",
+        "to": "dialogue",
+        "label": "targets"
+      }
+    ]
+  },
+  "people": [
+    {
+      "name": "Vivek Natarajan",
+      "role": "Senior/last author, Research Lead, Google DeepMind (medical AI)",
+      "why": "Drives the Med-PaLM/AMIE line \u2014 best person on direction and what's next.",
+      "connection_path": "cold: active on LinkedIn/X about medical AI",
+      "linkedin": null,
+      "search_hint": "Search LinkedIn for 'Vivek Natarajan Google DeepMind'"
+    },
+    {
+      "name": "Tao Tu",
+      "role": "First author, Google Research",
+      "why": "Knows the self-play training details and what didn't make the paper.",
+      "connection_path": "cold: first author",
+      "linkedin": null,
+      "search_hint": "Search LinkedIn for 'Tao Tu Google Research medical AI'"
+    },
+    {
+      "name": "Alan Karthikesalingam",
+      "role": "Clinician-scientist, Google DeepMind",
+      "why": "Bridges the clinical-validity and deployment-realism questions \u2014 the right skeptic on eval design.",
+      "connection_path": "cold: senior clinical author",
+      "linkedin": null,
+      "search_hint": "Search LinkedIn for 'Alan Karthikesalingam Google'"
+    },
+    {
+      "name": "Eric Topol",
+      "role": "Cardiologist, Scripps; author on AI-in-medicine",
+      "why": "Prominent independent voice on whether 'beats doctors on a benchmark' translates to care \u2014 good reality check.",
+      "connection_path": "cold: well-known commentator, reachable via X",
+      "linkedin": null,
+      "search_hint": "Search 'Eric Topol' (X/Substack 'Ground Truths')"
+    }
+  ]
+}

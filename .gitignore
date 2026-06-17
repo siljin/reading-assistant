@@ -1,0 +1,15 @@
+# Personal data — never commit. Your real LinkedIn export stays local.
+data/connections.csv
+
+# Paper PDFs can be large / copyrighted — keep them local by default.
+# Remove this line if you want PDFs committed with the repo.
+papers/*/paper.pdf
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store

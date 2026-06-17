@@ -1,0 +1,59 @@
+{
+  "paper": {
+    "title": "Attention Is All You Need",
+    "authors": [],
+    "affiliations": [],
+    "venue": "",
+    "year": null,
+    "url": "",
+    "code_url": "",
+    "data_url": null
+  },
+  "slug": "attention",
+  "headline": "",
+  "eli5": {
+    "analogy": "",
+    "text": ""
+  },
+  "plain_summary": "",
+  "glossary": [
+    {
+      "term": "",
+      "plain": ""
+    }
+  ],
+  "figures": [],
+  "demos": [],
+  "novelty": {
+    "type": "",
+    "before": "",
+    "after": ""
+  },
+  "methods": "",
+  "results": [
+    {
+      "claim": "",
+      "evidence": "",
+      "caveat": ""
+    }
+  ],
+  "limitations": {
+    "stated": [],
+    "unstated": []
+  },
+  "implementation": {
+    "feasibility": "",
+    "requirements": [],
+    "cheapest_validation": ""
+  },
+  "implications": {
+    "research": [],
+    "practice": [],
+    "personal": []
+  },
+  "knowledge_graph": {
+    "nodes": [],
+    "edges": []
+  },
+  "people": []
+}

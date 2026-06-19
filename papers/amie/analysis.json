@@ -33,27 +33,27 @@
     "analogy": "a medical student who practices by role-playing both the doctor AND the patient, millions of times, grading every conversation, until the doctor half gets very good.",
     "text": "AMIE is a chatbot built to take a patient's history and reach a diagnosis through conversation. To get good without endless real patients, it practices in a simulator where one copy plays the patient and another plays the doctor, and an automatic grader gives feedback. When tested against 20 real doctors over text chats, specialists rated AMIE higher on diagnosis and on most communication qualities."
   },
-  "plain_summary": "Good diagnosis starts with a good conversation: asking the right questions, in the right order, with empathy. The authors built **AMIE**, an LLM tuned specifically for that diagnostic dialogue. The trick is **self-play**: instead of needing huge volumes of real doctor-patient transcripts, AMIE practices inside a simulated clinic \u2014 one model instance acts as the patient, another as the doctor, and an automated critic scores each exchange and feeds back corrections. This lets training scale across many diseases and contexts cheaply. They then ran a **randomized, double-blind crossover OSCE** (a standardized clinical exam format) with validated patient-actors across 149 scenarios from Canada, the UK and India, pitting AMIE against 20 primary-care physicians over text chat. Specialists scored AMIE ahead on 28 of 32 axes; patient-actors on 24 of 26. The catch: it's **text-only**, the doctors were boxed into an unfamiliar chat interface, and 'beats doctors on a chat exam' is not 'safe to deploy in a real clinic.'",
+  "plain_summary": "Good diagnosis starts with a good conversation: asking the right questions, in the right order, with empathy. The authors built **AMIE**, an LLM tuned specifically for that diagnostic dialogue. The trick is **self-play**: instead of needing huge volumes of real doctor-patient transcripts, AMIE practices inside a simulated clinic — one model instance acts as the patient, another as the doctor, and an automated critic scores each exchange and feeds back corrections. This lets training scale across many diseases and contexts cheaply. They then ran a **randomized, double-blind crossover OSCE** (a standardized clinical exam format) with validated patient-actors across 149 scenarios from Canada, the UK and India, pitting AMIE against 20 primary-care physicians over text chat. Specialists scored AMIE ahead on 28 of 32 axes; patient-actors on 24 of 26. The catch: it's **text-only**, the doctors were boxed into an unfamiliar chat interface, and 'beats doctors on a chat exam' is not 'safe to deploy in a real clinic.'",
   "glossary": [
     {
       "term": "AMIE",
-      "plain": "Articulate Medical Intelligence Explorer \u2014 the diagnostic chatbot this paper introduces."
+      "plain": "Articulate Medical Intelligence Explorer — the diagnostic chatbot this paper introduces."
     },
     {
       "term": "Self-play",
-      "plain": "The model practices against copies of itself \u2014 here, one plays patient, one plays doctor \u2014 so it can train without endless real data."
+      "plain": "The model practices against copies of itself — here, one plays patient, one plays doctor — so it can train without endless real data."
     },
     {
       "term": "OSCE",
-      "plain": "Objective Structured Clinical Examination \u2014 a standardized role-play exam used to test real medical trainees."
+      "plain": "Objective Structured Clinical Examination — a standardized role-play exam used to test real medical trainees."
     },
     {
       "term": "Double-blind crossover",
-      "plain": "Neither raters nor participants know who's the AI vs the human, and each case is seen under both arms \u2014 a strong fairness setup."
+      "plain": "Neither raters nor participants know who's the AI vs the human, and each case is seen under both arms — a strong fairness setup."
     },
     {
       "term": "PCP",
-      "plain": "Primary Care Physician \u2014 the human baseline AMIE was compared against."
+      "plain": "Primary Care Physician — the human baseline AMIE was compared against."
     },
     {
       "term": "History-taking",
@@ -97,9 +97,9 @@
       "Not a deployment-ready or regulated system."
     ],
     "unstated": [
-      "PCPs were constrained to an unfamiliar text interface \u2014 the human baseline may be artificially weak.",
-      "No real safety/harm outcome measured; 'preferred on chat' \u2260 'safe to act on.'",
-      "Self-play critic defines 'good' \u2014 risk of optimizing to the grader rather than to real clinical correctness.",
+      "PCPs were constrained to an unfamiliar text interface — the human baseline may be artificially weak.",
+      "No real safety/harm outcome measured; 'preferred on chat' ≠ 'safe to act on.'",
+      "Self-play critic defines 'good' — risk of optimizing to the grader rather than to real clinical correctness.",
       "Geographic/scenario coverage is curated; tail and rare presentations untested.",
       "Empathy ratings can reward fluent verbosity, which an LLM produces by default."
     ]
@@ -116,11 +116,11 @@
   },
   "implications": {
     "research": [
-      "Self-play for dialogue skills (not just games/math) is viable \u2014 expect it applied to other expert-conversation domains.",
+      "Self-play for dialogue skills (not just games/math) is viable — expect it applied to other expert-conversation domains.",
       "Pushes eval away from static QA toward multi-turn, multi-axis clinical assessment."
     ],
     "practice": [
-      "Don't read this as 'AI beats doctors' \u2014 read it as 'structured AI history-taking is now strong enough to prototype triage/intake tools' under heavy human oversight.",
+      "Don't read this as 'AI beats doctors' — read it as 'structured AI history-taking is now strong enough to prototype triage/intake tools' under heavy human oversight.",
       "The constrained-interface caveat matters: any product comparison must match the human's real workflow, not a chat box."
     ]
   },
@@ -215,38 +215,488 @@
       }
     ]
   },
-  "people": [
-    {
-      "name": "Vivek Natarajan",
-      "role": "Senior/last author, Research Lead, Google DeepMind (medical AI)",
-      "why": "Drives the Med-PaLM/AMIE line \u2014 best person on direction and what's next.",
-      "connection_path": "cold: active on LinkedIn/X about medical AI",
-      "linkedin": null,
-      "search_hint": "Search LinkedIn for 'Vivek Natarajan Google DeepMind'"
-    },
-    {
-      "name": "Tao Tu",
-      "role": "First author, Google Research",
-      "why": "Knows the self-play training details and what didn't make the paper.",
-      "connection_path": "cold: first author",
-      "linkedin": null,
-      "search_hint": "Search LinkedIn for 'Tao Tu Google Research medical AI'"
-    },
-    {
-      "name": "Alan Karthikesalingam",
-      "role": "Clinician-scientist, Google DeepMind",
-      "why": "Bridges the clinical-validity and deployment-realism questions \u2014 the right skeptic on eval design.",
-      "connection_path": "cold: senior clinical author",
-      "linkedin": null,
-      "search_hint": "Search LinkedIn for 'Alan Karthikesalingam Google'"
-    },
-    {
-      "name": "Eric Topol",
-      "role": "Cardiologist, Scripps; author on AI-in-medicine",
-      "why": "Prominent independent voice on whether 'beats doctors on a benchmark' translates to care \u2014 good reality check.",
-      "connection_path": "cold: well-known commentator, reachable via X",
-      "linkedin": null,
-      "search_hint": "Search 'Eric Topol' (X/Substack 'Ground Truths')"
-    }
-  ]
+  "report_plan": {
+    "paper_archetype": "clinical",
+    "reader_goal": "understand the evidence and judge product/deployment readiness",
+    "narrative_arc": [
+      "problem_context",
+      "experiment_design",
+      "method_walkthrough",
+      "results_interpretation",
+      "limitations_and_caveats",
+      "real_world_implications",
+      "business_or_product_insight",
+      "learning_path",
+      "quiz"
+    ],
+    "sections": [
+      {
+        "type": "problem_context",
+        "title": "Why diagnostic dialogue is hard",
+        "takeaway": "AMIE targets the part of medicine where static exam benchmarks are weakest: asking the right follow-up questions over time.",
+        "content": "A diagnostic assistant is not just a search box for symptoms. It has to gather missing details, preserve patient trust, and keep a differential diagnosis alive while the conversation changes. That makes AMIE a clinical dialogue paper, not merely another medical question-answering benchmark.",
+        "visuals": [
+          {
+            "type": "cards",
+            "title": "The job AMIE is trying to do",
+            "items": [
+              {
+                "label": "Conversation",
+                "value": "Multi-turn",
+                "caption": "The model must decide what to ask next, not only answer a finished question."
+              },
+              {
+                "label": "Clinical target",
+                "value": "History-taking",
+                "caption": "The paper focuses on diagnosis through patient interviews."
+              },
+              {
+                "label": "Evaluation caveat",
+                "value": "Text chat",
+                "caption": "The test removes physical exam, tone of voice, and normal clinic workflow."
+              }
+            ]
+          },
+          {
+            "type": "comparison",
+            "title": "What this is not",
+            "items": [
+              {
+                "label": "Static QA",
+                "text": "Answering one medical exam question after all information is already provided."
+              },
+              {
+                "label": "Diagnostic dialogue",
+                "text": "Choosing questions, updating hypotheses, and explaining the plan as information arrives."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "experiment_design",
+        "title": "How the evaluation was set up",
+        "takeaway": "The study design is stronger than a demo, but still a simulated clinical exam rather than real-world deployment evidence.",
+        "content": "The authors ran a randomized, double-blind crossover OSCE across 149 scenarios. Validated patient-actors chatted with either AMIE or one of 20 primary-care physicians, and specialist physicians plus the actors rated the encounters afterward.",
+        "visuals": [
+          {
+            "type": "flow",
+            "title": "Blinded text-OSCE loop",
+            "steps": [
+              {
+                "label": "149 scenarios",
+                "caption": "Cases from Canada, the UK, and India."
+              },
+              {
+                "label": "Patient actor",
+                "caption": "A trained actor presents the same case by chat."
+              },
+              {
+                "label": "AMIE or PCP",
+                "caption": "The responder is hidden from raters."
+              },
+              {
+                "label": "Post-consult output",
+                "caption": "History, diagnosis, management, and communication are judged."
+              },
+              {
+                "label": "Ratings",
+                "caption": "Specialists and patient-actors score multiple axes."
+              }
+            ]
+          },
+          {
+            "type": "cards",
+            "title": "Study scale",
+            "items": [
+              {
+                "label": "Cases",
+                "value": "149",
+                "caption": "OSCE-style diagnostic scenarios."
+              },
+              {
+                "label": "Human baseline",
+                "value": "20 PCPs",
+                "caption": "Primary-care physicians working through text chat."
+              },
+              {
+                "label": "Countries",
+                "value": "3",
+                "caption": "Canada, UK, and India scenario coverage."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "method_walkthrough",
+        "title": "How AMIE learns before seeing patients",
+        "takeaway": "The key method idea is self-play: simulated patients, simulated clinicians, and an automated critic create scalable practice.",
+        "content": "AMIE starts from a large language model and is tuned for diagnostic dialogue. A simulated clinic produces conversations, a critic scores them, and the model is refined toward better history-taking and diagnosis. The appeal is scale: expert conversation data is expensive, but simulated practice can be generated in large volumes.",
+        "visuals": [
+          {
+            "type": "flow",
+            "title": "Self-play simulated clinic",
+            "steps": [
+              {
+                "label": "Create case",
+                "caption": "A disease scenario and patient profile are sampled."
+              },
+              {
+                "label": "Patient model",
+                "caption": "One model instance answers like the patient."
+              },
+              {
+                "label": "Clinician model",
+                "caption": "Another instance asks questions and forms a diagnosis."
+              },
+              {
+                "label": "Critic",
+                "caption": "The exchange is scored for clinical and communication quality."
+              },
+              {
+                "label": "Tune AMIE",
+                "caption": "Feedback is used to improve future dialogue."
+              }
+            ]
+          },
+          {
+            "type": "matrix",
+            "title": "Why self-play matters",
+            "columns": [
+              "Strength",
+              "Risk"
+            ],
+            "rows": [
+              "Data",
+              "Behavior"
+            ],
+            "cells": [
+              {
+                "label": "Scales cheaply",
+                "caption": "Generates many practice conversations without needing a real patient each time.",
+                "tone": "good"
+              },
+              {
+                "label": "Synthetic bias",
+                "caption": "The simulator may miss messy real patient behavior.",
+                "tone": "caution"
+              },
+              {
+                "label": "Optimizes dialogue",
+                "caption": "Training targets the actual multi-turn skill.",
+                "tone": "good"
+              },
+              {
+                "label": "Optimizes to critic",
+                "caption": "The model can learn what the grader rewards instead of what clinicians value.",
+                "tone": "caution"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "results_interpretation",
+        "title": "What the headline results really say",
+        "takeaway": "The results are impressive inside the study frame: AMIE leads most rated axes, but those axes do not prove autonomous clinical safety.",
+        "content": "Specialist physicians preferred AMIE on 28 of 32 axes, and patient-actors preferred it on 24 of 26 axes. That supports the claim that diagnostic dialogue models can perform strongly in a text OSCE. It does not prove that AMIE is better than doctors in normal care.",
+        "visuals": [
+          {
+            "type": "bar_chart",
+            "title": "Axes where AMIE led",
+            "bars": [
+              {
+                "label": "Specialist ratings",
+                "value": 28,
+                "max": 32,
+                "caption": "28 of 32 axes."
+              },
+              {
+                "label": "Patient-actor ratings",
+                "value": 24,
+                "max": 26,
+                "caption": "24 of 26 axes."
+              },
+              {
+                "label": "Real-clinic validity",
+                "value": 2,
+                "max": 10,
+                "caption": "Limited by text-only simulated setting."
+              }
+            ]
+          },
+          {
+            "type": "heatmap",
+            "title": "Evidence calibration",
+            "columns": [
+              "Strong",
+              "Moderate",
+              "Weak"
+            ],
+            "rows": [
+              {
+                "label": "Text OSCE performance",
+                "cells": [
+                  "High signal",
+                  "Some scenario dependence",
+                  ""
+                ]
+              },
+              {
+                "label": "Communication ratings",
+                "cells": [
+                  "Clear preference",
+                  "May reward verbosity",
+                  ""
+                ]
+              },
+              {
+                "label": "Deployment readiness",
+                "cells": [
+                  "",
+                  "Research direction",
+                  "No real patient outcomes"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "limitations_and_caveats",
+        "title": "Where the claim can break",
+        "takeaway": "The biggest caveat is not whether AMIE can chat well; it is whether chat-OSCE success transfers to safe clinical work.",
+        "content": "The stated limitations are important, and several unstated ones are product-critical. The human physicians were constrained to a chat interface, the patients were actors, and no real harm or downstream care outcome was measured.",
+        "bullets": [
+          "Text-only chat, not multimodal or real clinical setting.",
+          "Patient-actors and OSCE scenarios, not real patients.",
+          "Not a deployment-ready or regulated system.",
+          "PCPs were constrained to an unfamiliar text interface — the human baseline may be artificially weak.",
+          "No real safety/harm outcome measured; 'preferred on chat' ≠ 'safe to act on.'",
+          "Self-play critic defines 'good' — risk of optimizing to the grader rather than to real clinical correctness.",
+          "Geographic/scenario coverage is curated; tail and rare presentations untested.",
+          "Empathy ratings can reward fluent verbosity, which an LLM produces by default."
+        ],
+        "visuals": [
+          {
+            "type": "table",
+            "title": "Caveat map",
+            "columns": [
+              "Caveat",
+              "Why it matters"
+            ],
+            "rows": [
+              [
+                "Text-only interface",
+                "May penalize clinicians who normally rely on physical exam, tone, and workflow context."
+              ],
+              [
+                "Patient actors",
+                "Useful standardization, but not the same as anxious, complex, real patients."
+              ],
+              [
+                "No deployment outcomes",
+                "Ratings do not measure harm, follow-through, liability, or longitudinal safety."
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "type": "real_world_implications",
+        "title": "What this changes in the real world",
+        "takeaway": "The near-term opportunity is supervised intake and triage research, not autonomous diagnosis.",
+        "content": "A practical team should treat AMIE as evidence that structured AI history-taking is now worth prototyping under physician oversight. The strongest use cases are front-door intake, pre-visit summarization, differential-diagnosis support, and training simulation.",
+        "visuals": [
+          {
+            "type": "funnel",
+            "title": "Path from paper to product",
+            "steps": [
+              {
+                "label": "Simulated OSCE win",
+                "caption": "Supported by this paper.",
+                "status": "supported"
+              },
+              {
+                "label": "Clinician-supervised pilot",
+                "caption": "Needs local validation and workflow fit.",
+                "status": "caution"
+              },
+              {
+                "label": "Real patient outcomes",
+                "caption": "Not measured here.",
+                "status": "gap"
+              },
+              {
+                "label": "Regulated deployment",
+                "caption": "Requires safety, liability, monitoring, and governance.",
+                "status": "gap"
+              }
+            ]
+          },
+          {
+            "type": "matrix",
+            "title": "Best-fit applications",
+            "columns": [
+              "Lower risk",
+              "Higher risk"
+            ],
+            "rows": [
+              "Clinical value",
+              "Operational complexity"
+            ],
+            "cells": [
+              {
+                "label": "Pre-visit history",
+                "caption": "High value, physician reviews before action.",
+                "tone": "good"
+              },
+              {
+                "label": "Autonomous diagnosis",
+                "caption": "High value but not supported by this evidence.",
+                "tone": "bad"
+              },
+              {
+                "label": "Training simulator",
+                "caption": "Useful and controllable.",
+                "tone": "good"
+              },
+              {
+                "label": "Triage routing",
+                "caption": "Promising but needs safety thresholds.",
+                "tone": "caution"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "business_or_product_insight",
+        "title": "Product insight for builders",
+        "takeaway": "The viable product wedge is workflow augmentation with a clinician in the loop, not a stand-alone doctor chatbot.",
+        "content": "A business built on this research should sell time saved, better intake quality, and more complete patient histories. The defensibility is less the base model and more validated workflows, specialty-specific evaluation, safety monitoring, and integration with clinical systems.",
+        "visuals": [
+          {
+            "type": "table",
+            "title": "Builder checklist",
+            "columns": [
+              "Question",
+              "Why it matters"
+            ],
+            "rows": [
+              [
+                "Can clinicians edit and override every output?",
+                "Oversight is the difference between assistant and unsafe automation."
+              ],
+              [
+                "Does it improve real workflow time?",
+                "A better chat score is not enough for adoption."
+              ],
+              [
+                "Can you measure missed red flags?",
+                "Safety monitoring must be productized from day one."
+              ],
+              [
+                "What specialty comes first?",
+                "Narrow scope makes validation and sales more credible."
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "type": "learning_path",
+        "title": "Three papers to read next",
+        "takeaway": "Read these to understand the medical LLM line that surrounds AMIE.",
+        "papers": [
+          {
+            "title": "Large Language Models Encode Clinical Knowledge",
+            "url": "https://arxiv.org/abs/2212.13138",
+            "why": "Introduces Med-PaLM and the static medical QA foundation behind this research line.",
+            "read_for": "Medical LLM evaluation before conversational testing."
+          },
+          {
+            "title": "Towards Expert-Level Medical Question Answering with Large Language Models",
+            "url": "https://arxiv.org/abs/2305.09617",
+            "why": "Shows how stronger medical LLMs were aligned and evaluated before AMIE moved into dialogue.",
+            "read_for": "Alignment and medical benchmark methodology."
+          },
+          {
+            "title": "Multimodal Medical AI Reasoning with Physician Oversight",
+            "url": "https://arxiv.org/abs/2505.04653",
+            "why": "Useful follow-on context for moving beyond text-only dialogue toward real clinical inputs.",
+            "read_for": "Why multimodal evidence and oversight matter after AMIE."
+          }
+        ]
+      },
+      {
+        "type": "quiz",
+        "title": "Check your understanding",
+        "takeaway": "Five questions that test paper comprehension, field context, and product judgment.",
+        "questions": [
+          {
+            "category": "Paper comprehension",
+            "question": "What is the central training idea behind AMIE?",
+            "choices": [
+              "Self-play simulated clinical dialogue",
+              "A larger static exam database",
+              "Manual rule-based triage trees",
+              "Direct deployment feedback from hospitals"
+            ],
+            "answer": "Self-play simulated clinical dialogue",
+            "explanation": "AMIE practices in simulated doctor-patient conversations and learns from critique."
+          },
+          {
+            "category": "Field understanding",
+            "question": "Why is an OSCE different from a static medical QA benchmark?",
+            "choices": [
+              "It tests multi-turn clinical interaction",
+              "It only tests memorized facts",
+              "It avoids patient scenarios",
+              "It removes human raters"
+            ],
+            "answer": "It tests multi-turn clinical interaction",
+            "explanation": "An OSCE role-plays a clinical encounter, so the model must ask and respond over time."
+          },
+          {
+            "category": "Business insight",
+            "question": "Which first business wedge best matches this evidence?",
+            "choices": [
+              "Clinician-reviewed intake assistant",
+              "Fully autonomous diagnosis app",
+              "Consumer symptom influencer content",
+              "Unsupervised prescription engine"
+            ],
+            "answer": "Clinician-reviewed intake assistant",
+            "explanation": "The study supports strong history-taking in chat, but not autonomous real-world decisions."
+          },
+          {
+            "category": "Product insight",
+            "question": "What must be validated before clinical deployment?",
+            "choices": [
+              "Real workflow safety and outcomes",
+              "Only whether users like the interface",
+              "Whether the model can write longer answers",
+              "Whether it wins every OSCE axis"
+            ],
+            "answer": "Real workflow safety and outcomes",
+            "explanation": "Deployment depends on harm reduction, oversight, escalation, and clinical outcomes, not just ratings."
+          },
+          {
+            "category": "Research trivia",
+            "question": "What does PCP stand for in this paper?",
+            "choices": [
+              "Primary Care Physician",
+              "Patient Chat Protocol",
+              "Predictive Clinical Pipeline",
+              "Public Care Platform"
+            ],
+            "answer": "Primary Care Physician",
+            "explanation": "The human baseline was a group of primary-care physicians."
+          }
+        ]
+      }
+    ]
+  }
 }

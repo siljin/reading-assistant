@@ -1,20 +1,23 @@
 ---
 name: paper-reading-assistant
-description: Acquire an academic paper (arXiv link, PDF, OpenReview URL, or other source), extract its content, and produce a self-contained, beginner-friendly HTML report that simplifies, deeply analyzes, and contextualizes it — with an explain-it-simply analogy, a jargon decoder, plain-language figures, optional interactive demos/simulations, a knowledge graph, "so what" implications, persistent in-repo notes, and a list of people to reach out to that starts from the user's own LinkedIn network. Everything for a paper is saved inside the repo under papers/<slug>/. Use whenever the user shares a paper URL or PDF and asks to read, summarize, analyze, "break down", "make sense of", "explain", "go deep on", or "brief someone on" it, even if they don't say "report".
+description: Acquire an academic paper (arXiv link, PDF, OpenReview URL, DOI, or other source), extract its content, and produce a self-contained, beginner-friendly, visually rich HTML report. Use a paper-specific report_plan so method, benchmark, dataset, theory, systems, survey, clinical, and deployment papers can each be explained with the structure and visuals that fit them best. Everything for a paper is saved under papers/<slug>/. Use whenever the user shares a paper and asks to read, summarize, analyze, break down, explain, go deep on, or brief someone on it.
 ---
 
 # Paper Reading Assistant
 
-Turn a paper into a sharp briefing that a *newcomer* can follow and an expert still respects. Two audiences in one report: someone with zero background gets an analogy, a jargon decoder, and a playable demo; the practitioner gets the skeptical "is this load-bearing" analysis.
+Turn a paper into a sharp briefing that a newcomer can follow and a practitioner still respects. The report should be concise, visual, skeptical, and useful for real decisions.
 
-This skill is the engine of an end-to-end repo. Each paper gets a folder under `papers/<slug>/` holding its source, analysis JSON, rendered `report.html`, and persistent `notes.md`. The repo is meant to be used by anyone who clones it — keep everything self-contained and documented (see the repo `README.md`).
+The core model is:
 
-## Repo layout you operate in
-
+```text
+paper -> analysis.json -> adaptive report_plan -> render_report.py -> report.html
 ```
-papers/<slug>/        source.md / paper.pdf, analysis.json, report.html, notes.md
-data/connections.csv  the user's LinkedIn export (gitignored, PII — local only)
-paper-reading-assistant/scripts/   render_report.py, find_people.py, serve.py, new_paper.py
+
+Each paper folder holds the source pointer, canonical analysis JSON, and generated HTML:
+
+```text
+papers/<slug>/        source.md / paper.pdf, analysis.json, report.html
+paper-reading-assistant/scripts/   new_paper.py, render_report.py
 ```
 
 Resolve script paths relative to this skill folder. The repo root is two levels above `scripts/`.
@@ -22,15 +25,16 @@ Resolve script paths relative to this skill folder. The repo root is two levels 
 ## Workflow
 
 0. **Scaffold** the paper folder.
-1. **Acquire** the paper content and save the source into the folder.
-2. **Extract** bibliographic data, structure, claims, methods, results, limitations.
-3. **Simplify** — write the ELI5 analogy, jargon decoder, and plan any demos. (This is a first-class goal, not a nicety.)
-4. **Analyze** with a skeptical lens (see `references/analysis-rubric.md`).
-5. **Find people** — start from the user's own network, then spread out.
-6. **Render** the HTML report via `scripts/render_report.py`.
-7. **Persist & present** — save into the repo, start the server, point the user at it.
+1. **Acquire** the paper content and save the source pointer or extracted text.
+2. **Extract** bibliographic data, structure, claims, methods, results, limitations, and related work.
+3. **Classify** the paper and choose the best explanation shape.
+4. **Simplify** for a newcomer: analogy, jargon decoder, plain-language summary.
+5. **Analyze** with a skeptical lens using `references/analysis-rubric.md`.
+6. **Plan the report** in `analysis.json.report_plan`.
+7. **Render** the HTML report through `scripts/render_report.py`.
+8. **Present** the headline finding and local path.
 
-Do not skip steps. The script is the *only* path to the HTML — do not hand-write HTML.
+Do not hand-write the final HTML. The renderer is the path to `report.html`.
 
 ---
 
@@ -40,94 +44,144 @@ Do not skip steps. The script is the *only* path to the HTML — do not hand-wri
 python paper-reading-assistant/scripts/new_paper.py --title "<paper title>" [--slug <slug>]
 ```
 
-This creates `papers/<slug>/` with `analysis.template.json`, `source.md`, and `notes.md`. Use the printed slug for everything downstream.
+This creates `papers/<slug>/` with `analysis.json` and `source.md`. Use the printed slug downstream.
 
-## Step 1: Acquire the paper
+## Step 1: Acquire the Paper
 
 Determine the source from what the user provided:
 
-- **arXiv URL** (e.g. `arxiv.org/abs/2401.12345`): fetch the abstract page first for metadata, then the HTML version if available (`arxiv.org/html/2401.12345`), falling back to the PDF (`arxiv.org/pdf/2401.12345`).
-- **OpenReview / ACL / ACM / IEEE / NeurIPS / blog post URL**: web_fetch the canonical page.
-- **PDF uploaded**: read it via the `pdf-reading` skill. Also copy the PDF into `papers/<slug>/paper.pdf` so the paper lives in the repo.
-- **Just a title or DOI**: web_search to locate the canonical source, then proceed.
+- **arXiv URL**: fetch the abstract page for metadata, then the HTML version when available, falling back to the PDF.
+- **OpenReview / ACL / ACM / IEEE / NeurIPS / blog post URL**: fetch the canonical page.
+- **PDF uploaded**: extract text and copy the PDF into `papers/<slug>/paper.pdf` when useful.
+- **Title or DOI**: search for the canonical source, then proceed.
 
-Prefer HTML over PDF when both exist — cleaner section structure and resolvable figure/table references. Save a copy or pointer of the source into `papers/<slug>/source.md`. If acquisition fails (paywall, broken link, OCR-only scan), tell the user what failed and ask them to paste text or upload a PDF.
+Prefer HTML over PDF when both exist because section structure and references are cleaner. Save the source link, DOI, extraction notes, or pasted text into `papers/<slug>/source.md`. If acquisition fails, tell the user what failed and ask for pasted text or a PDF.
 
 ## Step 2: Extract
 
-Capture the *claims and evidence*, not the prose.
+Capture claims and evidence, not just prose:
 
-- **Bibliographic**: title, authors (with affiliations if visible), venue, year, link, code/data URLs. Capture affiliations carefully — Step 5 needs them.
-- **The actual contribution**: in one sentence, what is now true that wasn't before this paper?
-- **Methods**: datasets, architecture, experimental setup, key design choices. Note standard vs. novel.
-- **Results**: headline numbers, baselines, metrics. Exact numbers where they matter.
-- **Limitations**: stated and unstated.
-- **Related work positioning**: which prior works does it define itself against?
+- Bibliographic metadata: title, authors, affiliations, venue, year, paper URL, code/data URLs.
+- The actual contribution: one sentence saying what is now believable that was not before.
+- Methods: datasets, architecture, experimental setup, key design choices, and what is standard vs. new.
+- Results: headline numbers, baselines, metrics, and exact values where they matter.
+- Limitations: stated and unstated.
+- Related work positioning: what the paper builds on or argues against.
 
-## Step 3: Simplify (make it understandable to a newcomer)
+## Step 3: Classify the Paper
 
-The original failure mode of paper summaries is being readable only to people who already get it. Fix that with concrete, populated fields in the analysis JSON:
+Choose `report_plan.paper_archetype` and `report_plan.reader_goal` before drafting sections.
 
-- **`eli5`** — one vivid **analogy** ("it's like…") plus 2–3 jargon-free sentences. A smart 12th-grader should finish it knowing what the paper does and why anyone cares. No "leveraging", "novel framework", "SOTA".
-- **`glossary`** — 4–10 terms a newcomer would trip on, each with a one-line plain definition. These render as a tap-to-expand "jargon decoder".
-- **`figures`** — when the paper has a key figure, add an entry with a **plain-language caption** that says what the picture is *telling you*, not what it depicts. (Use a URL in `src`, or omit `src` and just write the caption.)
-- **`demos`** — when a concept benefits from interaction, author a tiny self-contained HTML+JS widget (a slider, a toggle, a canvas animation) that lets the reader *feel* the mechanism. Examples: a slider showing how temperature changes a softmax; a toggle comparing attention vs. no-attention; an animation of gradient descent steps. Keep each demo standalone (inline `<script>`), runs in a sandboxed iframe. Prefer one good demo over three weak ones; skip if nothing genuinely clarifies.
+Common archetypes:
 
-Plain-language summary still belongs in `plain_summary` (≈150 words). Re-explain, don't translate.
+- **method**: problem -> architecture -> algorithm steps -> ablations -> limitations -> implementation notes
+- **benchmark**: task setup -> dataset/eval protocol -> result comparisons -> caveats -> field implications
+- **dataset**: source -> collection pipeline -> coverage/distribution -> bias/risk -> use cases
+- **theory**: problem -> assumptions -> theorem/claim -> intuition -> implications -> open questions
+- **clinical/deployment**: workflow -> study design -> outcomes -> safety gaps -> product/regulatory implications
+- **survey**: field map -> taxonomy -> consensus -> disagreements -> future directions
+- **systems**: architecture -> workload -> trade-offs -> performance -> operational constraints
 
-## Step 4: Analyze (the skeptical core)
+Repeatability means consistent generation mechanics, not identical section order.
 
-Read `references/analysis-rubric.md` before drafting. Headline goals: what's novel vs. incremental, where claims are load-bearing, implementation feasibility, three-bucket "so what", and an 8–15 node knowledge graph. Tone: a trusted colleague briefing you on whether it's worth your time — not a reviewer, fan, or press release.
+## Step 4: Simplify
 
-## Step 5: Find people — start from the user's network, then spread out
+Fill these fields concretely:
 
-Do **not** just list authors. Lead with people the user already knows.
+- **`eli5`**: one vivid analogy plus two or three jargon-free sentences.
+- **`glossary`**: four to ten terms a newcomer would trip on, each with a one-line practical definition.
+- **`plain_summary`**: around 150 words that re-explain the paper rather than translating the abstract.
+- **`figures` / `demos`**: include only when they clarify. A demo should teach a mechanism faster than prose.
 
-1. **Mine the user's own network.** If `data/connections.csv` exists (the user's LinkedIn export), run:
-   ```bash
-   python paper-reading-assistant/scripts/find_people.py \
-       --keywords "<topic keywords, comma-sep>" \
-       --affiliations "<author affiliations, comma-sep>" --top 8
-   ```
-   This ranks the user's connections by topical/affiliation fit, locally (the CSV is PII and gitignored). Top hits become **1st-degree** people with `connection_path: "1st-degree: your connection"`.
-   If the file is missing, tell the user how to add it (README → "Connect your network") and continue with the steps below.
+## Step 5: Analyze
 
-2. **Spread out to 2nd degree.** For the strongest 1st-degree matches, web-search who *they* visibly collaborate with / who works in this exact area at their org. Surface those as `connection_path: "2nd-degree: via <your connection>"`. The aim is the *best-fit* person for this paper, reachable through a warm intro — not necessarily someone you know directly.
+Read `references/analysis-rubric.md` before drafting. Focus on novelty, load-bearing claims, evidence quality, feasibility, limitations, implications, and business/product relevance when appropriate.
 
-3. **Then add cold but high-value contacts**: authors (first + senior), a known critic or competing lab, a practitioner who built the production version. Mark these `connection_path: "cold: <reason reachable>"` or omit the path.
+## Step 6: Build `report_plan`
 
-For each person: `name`, `role`, `why` (one sentence), `connection_path`, and either a `linkedin` URL or a `search_hint`. **Never fabricate URLs** — leave `linkedin` null and give a `search_hint` when unsure. Aim for 4–6 people, warm ones first.
+Add a `report_plan` object to `analysis.json`:
 
-## Step 6: Render the HTML
+```json
+{
+  "paper_archetype": "method",
+  "reader_goal": "learn field and evaluate usefulness",
+  "narrative_arc": ["problem_context", "architecture_or_pipeline", "results_interpretation"],
+  "sections": []
+}
+```
 
-Write the populated analysis to `papers/<slug>/analysis.json` (schema is documented at the top of `render_report.py`), then:
+Each section should contain:
+
+```json
+{
+  "type": "problem_context",
+  "title": "",
+  "takeaway": "",
+  "content": "",
+  "bullets": [],
+  "caveats": [],
+  "visuals": []
+}
+```
+
+Use these section types as building blocks:
+
+```text
+problem_context
+core_contribution
+method_walkthrough
+architecture_or_pipeline
+experiment_design
+results_interpretation
+limitations_and_caveats
+real_world_implications
+business_or_product_insight
+learning_path
+quiz
+```
+
+Choose visuals per section. Do not force a heatmap, funnel, or matrix if another representation explains the paper better. Supported visual primitives include:
+
+```text
+cards
+table
+flow
+bar_chart
+matrix
+timeline
+comparison
+heatmap
+funnel
+```
+
+Every report should usually end with:
+
+- **`learning_path`**: three suggested papers for learning the field.
+- **`quiz`**: five MCQs testing paper comprehension, field understanding, business insight, product insight, and general research context.
+
+## Step 7: Render
+
+Write the populated analysis to `papers/<slug>/analysis.json`, then:
 
 ```bash
 python paper-reading-assistant/scripts/render_report.py \
-    --input papers/<slug>/analysis.json \
-    --output papers/<slug>/report.html \
-    --slug <slug>
+  --input papers/<slug>/analysis.json \
+  --output papers/<slug>/report.html \
+  --slug <slug>
 ```
 
-The script produces a self-contained HTML file (CSS inlined, knowledge graph via vis-network from CDN, demos in sandboxed iframes, notes editor wired for persistence). If the script errors, read the error, fix the JSON, re-run. Do not work around it by writing HTML.
+If rendering fails, fix the JSON and re-run. Do not bypass the renderer.
 
-## Step 7: Persist & present
+## Step 8: Present
 
-Everything is already in `papers/<slug>/` — it lives in the repo and travels with it. Notes persist to `papers/<slug>/notes.md` automatically when the report is opened through the local server:
-
-```bash
-python paper-reading-assistant/scripts/serve.py
-# then open http://localhost:8000/papers/<slug>/report.html
-```
-
-Tell the user this in one or two lines: the headline finding (the single sharpest thing), and the path to open. Keep chat short — the report holds the rest. If the user committed earlier reports, their notes are right there in `notes.md`, diffable in git.
+Tell the user the headline finding and the `papers/<slug>/report.html` path to open directly in a browser. Keep chat short; the report carries the detail.
 
 ---
 
-## Tone reminders
+## Tone Reminders
 
-- Two audiences: newcomer-friendly *and* skeptical. The simplify sections carry the first; the analysis carries the second. Don't let either crowd out the other.
-- Pointed > comprehensive. If something is uninteresting, say less, not more.
-- Calibrated. Say "well-supported" or "load-bearing on one experiment" — whichever is true.
-- Demos must clarify, not decorate. No demo beats a confusing demo.
-- Never include private/personal details about non-public individuals. Paper authors named in their professional capacity are fine. The user's own connections data stays local (gitignored) — surface a name only as an outreach suggestion to the user, never publish it into a shared artifact beyond their own repo.
+- Newcomer-friendly and skeptical at the same time.
+- Pointed over exhaustive.
+- Calibrated claims beat press-release language.
+- Visuals must explain, not decorate.
+- Never include private personal details about non-public individuals.

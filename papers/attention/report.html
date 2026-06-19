@@ -6,461 +6,684 @@
 <title>Attention Is All You Need</title>
 <style>
 :root {
-  --bg: #fafaf7;
+  --paper: #f7f4ed;
+  --paper-2: #eef6f3;
+  --ink: #17211d;
+  --muted: #5d6a63;
   --card: #ffffff;
-  --ink: #1a1a1a;
-  --muted: #6b6b6b;
-  --line: #e8e6e0;
-  --accent: #2d4a8a;
-  --accent-soft: #eef2fa;
-  --warn: #b85c00;
-  --warn-soft: #fdf3e7;
-  --good: #2e6f4a;
-  --good-soft: #ecf5ef;
-  --eli5: #6a3fb5;
-  --eli5-soft: #f1ecfa;
-  --radius: 10px;
+  --line: #d9dfd8;
+  --green: #2e6f4a;
+  --green-2: #dcebe4;
+  --amber: #b56516;
+  --amber-2: #fff0d8;
+  --blue: #2d4a8a;
+  --blue-2: #e7edf8;
+  --red: #9f3f33;
+  --red-2: #f8e4df;
+  --shadow: 0 18px 45px rgba(43, 55, 48, 0.09);
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
-  background: var(--bg);
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #fbf8ef 0%, #eef6f3 46%, #f8faf7 100%);
   color: var(--ink);
-  line-height: 1.55;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
 }
-.container { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
-
-.paper-header { margin-bottom: 32px; }
-.paper-header h1 {
-  font-size: 32px; line-height: 1.2; margin: 0 0 12px;
-  letter-spacing: -0.01em; font-weight: 600;
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background: rgba(23, 33, 29, 0.08); border-radius: 4px; padding: 1px 5px; }
+.page { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+.hero {
+  min-height: 82vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(310px, 0.7fr);
+  gap: 30px;
+  align-items: center;
+  padding: 44px 0 30px;
 }
-.byline { color: var(--ink); margin: 4px 0; font-size: 15px; }
-.byline .aff { color: var(--muted); font-size: 13px; }
-.meta { color: var(--muted); font-size: 14px; margin: 4px 0; }
-.links { margin-top: 12px; font-size: 14px; }
-.links a { color: var(--accent); text-decoration: none; margin-right: 4px; }
-.links a:hover { text-decoration: underline; }
-
-.card {
-  background: var(--card);
+.eyebrow, .label {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 12px 0 16px;
+  max-width: 820px;
+  font-size: clamp(40px, 7vw, 82px);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+.hero-lede { max-width: 720px; margin: 0; color: #2d3732; font-size: clamp(18px, 2vw, 23px); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.pill {
+  display: inline-flex;
+  border: 1px solid rgba(46, 111, 74, 0.2);
+  border-radius: 999px;
+  padding: 9px 13px;
+  background: rgba(255, 255, 255, 0.66);
+  color: #26352e;
+  font-size: 14px;
+  font-weight: 700;
+}
+.muted-pill { background: var(--amber-2); border-color: #edcf9f; }
+.source-line { margin-top: 18px; color: var(--muted); font-size: 14px; }
+.hero-board, .summary-panel, .adaptive-section {
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 24px 28px;
-  margin-bottom: 20px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow);
 }
-.card h2 {
-  font-size: 18px; font-weight: 600; margin: 0 0 12px;
-  letter-spacing: -0.005em;
+.hero-board { padding: 20px; }
+.hero-board-title { font-size: 22px; font-weight: 900; line-height: 1.18; margin: 10px 0; }
+.hero-board p { color: var(--muted); }
+.slug { font-size: 13px; }
+.summary-panel { padding: 22px; margin: 18px 0 28px; }
+.summary-panel p { max-width: 880px; font-size: 18px; }
+.adaptive-section { margin: 24px 0; padding: 22px; }
+.section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(240px, 0.52fr);
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 18px;
 }
-.card h3 {
-  font-size: 14px; font-weight: 600; margin: 16px 0 6px;
-  text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+.section-head h2 { margin: 6px 0 0; max-width: 780px; font-size: clamp(27px, 4vw, 44px); line-height: 1.08; }
+.section-summary { margin: 0; color: var(--muted); font-size: 16px; }
+.section-body > p { max-width: 820px; }
+.visual {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
 }
-.card p { margin: 8px 0; }
-.card ul { margin: 8px 0; padding-left: 20px; }
-.card li { margin: 4px 0; }
-.card code {
-  background: #f3f1ec; padding: 1px 5px; border-radius: 4px;
-  font-size: 0.9em; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+.visual-title { margin-bottom: 12px; color: var(--ink); font-weight: 900; font-size: 18px; }
+.metric-grid, .learning-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
 }
-.label {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--muted); margin-bottom: 8px; font-weight: 600;
+.metric-card, .learning-card, .flow-node, .compare-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+  padding: 14px;
 }
-
-.headline {
-  background: var(--accent-soft);
-  border-color: #d4dded;
+.metric-card strong { display: block; font-size: 26px; line-height: 1.1; margin: 8px 0; }
+.metric-card p, .learning-card p, .flow-node p, .compare-card p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.flow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
 }
-.headline p {
-  font-size: 19px; line-height: 1.45; margin: 0;
-  font-weight: 500; color: var(--ink);
+.step-number, .read-number {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--green-2);
+  color: var(--green);
+  font-weight: 900;
 }
-
-.eli5 { background: var(--eli5-soft); border-color: #ddd2f0; }
-.eli5 .label { color: var(--eli5); }
-.eli5 h2 { color: var(--eli5); }
-.analogy { font-size: 17px; line-height: 1.5; }
-.analogy-mark {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
-  font-weight: 700; color: var(--eli5); display: block; margin-bottom: 2px;
+.flow-node strong { display: block; margin-top: 10px; }
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--heat-cols), minmax(120px, 1fr));
+  gap: 6px;
 }
-
-.glossary-item {
-  border: 1px solid var(--line); border-radius: 8px;
-  padding: 8px 12px; margin: 6px 0; background: var(--bg);
+.heat-cell {
+  min-height: 54px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+  font-size: 13px;
 }
-.glossary-item summary {
-  cursor: pointer; font-weight: 600; font-size: 14px;
+.heat-head { background: var(--ink); color: #fff; font-weight: 900; text-align: center; }
+.heat-row { font-weight: 900; }
+.heat-win { background: var(--green-2); color: #183529; border-color: #b9d5c6; }
+.heat-caution { background: var(--amber-2); color: #6d3f12; border-color: #edcf9f; }
+.funnel-list { display: grid; gap: 8px; }
+.funnel-step {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr) 112px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
 }
-.glossary-item p { margin: 8px 0 2px; font-size: 14px; color: #333; }
-
-.paper-figure {
-  margin: 12px 0; padding: 12px; border: 1px solid var(--line);
-  border-radius: 8px; background: var(--bg);
+.funnel-step p { margin: 0; color: var(--muted); font-size: 14px; }
+.status {
+  justify-self: end;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  background: var(--blue-2);
+  color: var(--blue);
 }
-.paper-figure img { max-width: 100%; height: auto; border-radius: 6px; display: block; }
-.paper-figure figcaption { font-size: 14px; color: #333; margin-top: 8px; }
-
-.demo { margin: 14px 0; }
-.demo h3 { color: var(--ink); text-transform: none; letter-spacing: 0; font-size: 15px; }
-.demo-caption { font-size: 14px; color: var(--muted); margin: 4px 0 8px; }
-.demo-frame {
-  width: 100%; min-height: 220px; border: 1px solid var(--line);
-  border-radius: 8px; background: #fff;
+.status-supported, .status-good { background: var(--green-2); color: var(--green); }
+.status-caution { background: var(--amber-2); color: var(--amber); }
+.status-gap, .status-bad { background: var(--red-2); color: var(--red); }
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--matrix-cols), minmax(130px, 1fr));
+  gap: 8px;
 }
-
-.novelty-tag {
-  display: inline-block; padding: 4px 10px; border-radius: 999px;
-  font-size: 12px; font-weight: 500; margin-bottom: 12px;
-  background: var(--accent-soft); color: var(--accent);
+.axis-label {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
-.before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
-.before-after > div {
-  padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px;
-  background: var(--bg);
+.matrix-cell {
+  min-height: 118px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
 }
-.ba-label {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--muted); font-weight: 600;
+.matrix-cell strong { display: block; margin-bottom: 6px; }
+.matrix-cell p { margin: 0; color: var(--muted); font-size: 13px; }
+.tone-good { background: var(--green-2); border-color: #b9d5c6; }
+.tone-caution { background: var(--amber-2); border-color: #edcf9f; }
+.tone-bad { background: var(--red-2); border-color: #e1b9b3; }
+.timeline-list { display: grid; gap: 10px; }
+.timeline-item {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
 }
-.before-after p { margin: 6px 0 0; font-size: 14px; }
-
-.result-row { padding: 12px 0; border-bottom: 1px solid var(--line); }
-.result-row:last-child { border-bottom: none; }
-.result-row .claim { font-weight: 500; margin: 0 0 6px; }
-.result-row .evidence, .result-row .caveat { font-size: 14px; margin: 4px 0; color: #333; }
-.result-row .caveat { color: var(--warn); }
-.r-label {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
-  font-weight: 600; margin-right: 4px;
+.timeline-item > span {
+  display: inline-flex;
+  justify-content: center;
+  height: max-content;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: var(--blue-2);
+  color: var(--blue);
+  font-weight: 900;
 }
-.result-row .evidence .r-label { color: var(--good); }
-.result-row .caveat .r-label   { color: var(--warn); }
-
-.lim-block { margin-bottom: 12px; }
-.lim-unstated {
-  background: var(--warn-soft); border: 1px solid #f0d9bc;
-  padding: 12px 16px; border-radius: 8px;
+.bar-list { display: grid; gap: 12px; }
+.bar-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-weight: 900; }
+.bar-track { height: 14px; overflow: hidden; border-radius: 999px; background: #e7ece8; }
+.bar-track span { display: block; height: 100%; border-radius: inherit; background: var(--green); }
+.bar-row p { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid var(--line); padding: 10px; text-align: left; vertical-align: top; }
+th { background: var(--ink); color: #fff; }
+.comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.caveat-box {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-left: 5px solid var(--amber);
+  border-radius: 8px;
+  background: var(--amber-2);
 }
-
-.feasibility {
-  display: inline-block; padding: 4px 10px; border-radius: 999px;
-  font-size: 12px; font-weight: 500; margin-bottom: 8px;
-  background: var(--good-soft); color: var(--good);
+.learning-card { display: grid; gap: 10px; }
+.learning-card h3 { margin: 0; font-size: 20px; line-height: 1.18; }
+.why-read { padding: 11px; border-radius: 8px; background: var(--paper-2); color: #26352e; }
+.quiz-grid { display: grid; gap: 12px; }
+.quiz-card {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
 }
-.feas-quarter, .feas-research-project { background: var(--warn-soft); color: var(--warn); }
-
-.imp-grid { display: grid; gap: 14px; }
-.imp-block {
-  padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px;
-  background: var(--bg);
+.quiz-topic { display: flex; flex-direction: column; gap: 8px; }
+.quiz-topic span {
+  width: max-content;
+  max-width: 100%;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: var(--blue-2);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 900;
 }
-.imp-block h3 { margin-top: 0; }
-
-.people-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;
+.quiz-card h3 { margin: 0; font-size: 20px; line-height: 1.25; }
+.choices { display: grid; gap: 8px; margin: 14px 0; padding: 0; list-style: none; }
+.choices li { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfa; }
+.answer { border-radius: 8px; background: var(--green-2); color: #183529; padding: 10px 12px; }
+.answer summary { cursor: pointer; font-weight: 900; }
+.answer p { margin: 8px 0 0; }
+.footer { padding: 32px 0 56px; color: var(--muted); font-size: 14px; }
+@media (max-width: 900px) {
+  .hero, .section-head { grid-template-columns: 1fr; }
+  .heatmap-grid, .matrix-grid { grid-template-columns: 1fr; }
+  .heat-head { text-align: left; }
+  .axis-label { place-items: start; }
 }
-.person-card {
-  padding: 16px; border: 1px solid var(--line); border-radius: 8px;
-  background: var(--bg);
-}
-.person-card h3 {
-  margin: 0 0 4px; font-size: 15px; text-transform: none;
-  letter-spacing: 0; color: var(--ink);
-}
-.person-card .role { font-size: 13px; color: var(--muted); margin: 0 0 6px; }
-.conn-path {
-  font-size: 12px; font-weight: 600; color: var(--good);
-  background: var(--good-soft); border-radius: 6px;
-  padding: 4px 8px; margin: 0 0 8px; display: inline-block;
-}
-.person-card .why { font-size: 14px; margin: 0 0 10px; }
-.li-link {
-  color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500;
-}
-.li-link:hover { text-decoration: underline; }
-.li-hint { color: var(--muted); font-size: 13px; font-style: italic; }
-
-.graph-help { color: var(--muted); font-size: 13px; margin-top: 0; }
-.kg-container {
-  height: 480px; border: 1px solid var(--line); border-radius: 8px;
-  background: var(--bg); margin-top: 12px;
-}
-
-.notes-editor {
-  min-height: 140px; padding: 12px 14px;
-  border: 1px solid var(--line); border-radius: 8px;
-  background: var(--bg); font-size: 15px; line-height: 1.6;
-  outline: none; white-space: pre-wrap;
-}
-.notes-editor:focus { border-color: var(--accent); }
-.notes-editor:empty::before {
-  content: attr(data-placeholder); color: var(--muted);
-}
-.notes-help { font-size: 13px; color: var(--muted); margin-top: 0; }
-.notes-status { font-weight: 600; margin-left: 6px; }
-.notes-actions { margin-top: 10px; display: flex; gap: 8px; }
-.notes-actions button {
-  font: inherit; font-size: 13px; padding: 6px 14px; cursor: pointer;
-  border: 1px solid var(--line); border-radius: 8px; background: #fff;
-}
-.notes-actions button:hover { border-color: var(--accent); color: var(--accent); }
-
 @media (max-width: 640px) {
-  .container { padding: 32px 16px 64px; }
-  .paper-header h1 { font-size: 26px; }
-  .before-after { grid-template-columns: 1fr; }
+  .page { width: min(100% - 22px, 1180px); }
+  .hero { min-height: auto; padding-top: 28px; }
+  .funnel-step, .timeline-item, .quiz-card { grid-template-columns: 1fr; }
+  .status { justify-self: start; }
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/dist/vis-network.min.js"></script>
 </head>
 <body>
-<div class="container">
+<main class="page">
 
-    <header class="paper-header">
-      <h1>Attention Is All You Need</h1>
-      <p class="byline">A. Vaswani <span class='aff'>(Google)</span></p>
-      <p class="meta">NeurIPS · 2017</p>
-      <p class="links"><a href="https://arxiv.org/abs/1706.03762" target="_blank">Paper ↗</a></p>
-    </header>
-    
-
-    <section class="card headline">
-      <div class="label">TL;DR</div>
-      <p>Self-attention alone, no recurrence, beats RNNs on translation and trains far faster.</p>
-    </section>
-    
-
-    <section class="card eli5">
-      <div class="label">No background needed</div>
-      <h2>Explain it simply</h2>
-      <p class="analogy"><span class="analogy-mark">Think of it like</span> a group reading where everyone glances at every other word at once</p><p>Instead of reading word by word, the model looks at all words simultaneously and decides which matter.</p>
-    </section>
-    
-
-    <section class="card">
-      
-      <h2>Plain-language summary</h2>
-      <p>The Transformer drops recurrence and uses <strong>attention</strong>.</p>
-    </section>
-    
-
-    <section class="card glossary">
-      <div class="label">Tap any term</div>
-      <h2>Jargon decoder</h2>
-      
-          <details class="glossary-item">
-            <summary>Attention</summary>
-            <p>A way for the model to weigh which other words matter.</p>
-          </details>
-        
-    </section>
-    
-
-
-    <section class="card demos">
-      <div class="label">Interactive</div>
-      <h2>Play with it</h2>
-      
-          <div class="demo">
-            <h3>Softmax temperature</h3>
-            <p class="demo-caption">Drag to sharpen/flatten.</p>
-            <iframe class="demo-frame" sandbox="allow-scripts"
-                    srcdoc="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&#x27;utf-8&#x27;&gt;&lt;style&gt;body{font-family:system-ui,sans-serif;margin:12px;color:#1a1a1a;}input,button,select{font:inherit;margin:4px 0;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;input id=t type=range min=1 max=50 value=10&gt;&lt;pre id=o&gt;&lt;/pre&gt;&lt;script&gt;var t=document.getElementById(&#x27;t&#x27;),o=document.getElementById(&#x27;o&#x27;);function f(){var T=t.value/10,x=[2,1,0].map(v=&gt;Math.exp(v/T)),s=x.reduce((a,b)=&gt;a+b);o.textContent=x.map(v=&gt;(v/s).toFixed(2)).join(&#x27; &#x27;)}t.oninput=f;f()&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;" loading="lazy"></iframe>
-          </div>
-        
-    </section>
-    
-
-    <section class="card">
-      
-      <h2>What&#x27;s actually new</h2>
-      
-      <div class="novelty-tag novelty-conceptual">Conceptually novel</div>
-      <div class="before-after">
-        <div><span class="ba-label">Before</span><p>Seq models used recurrence.</p></div>
-        <div><span class="ba-label">After</span><p>Attention suffices.</p></div>
+    <section class="hero adaptive-section section-title" aria-labelledby="title">
+      <div>
+        <div class="eyebrow">Research paper visual briefing</div>
+        <h1 id="title">Attention Is All You Need</h1>
+        <p class="hero-lede">Self-attention alone, no recurrence, beats RNNs on translation and trains far faster.</p>
+        <div class="hero-actions">
+          <span class="pill">learn the field and understand why the architecture mattered</span>
+          <span class="pill muted-pill">NeurIPS / 2017 / Method</span>
+        </div>
+        <p class="source-line">
+          Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin<br>
+          <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer">Open paper</a>
+        </p>
       </div>
-    
+      <aside class="hero-board">
+        <div class="label">Report recipe</div>
+        <p class="hero-board-title">Adaptive structure, consistent design.</p>
+        <p>This page is generated from <code>analysis.json</code>. The paper decides the section order; the renderer keeps the layout readable.</p>
+        <p class="slug">Slug: <code>attention</code></p>
+      </aside>
     </section>
-    
 
 
-    <section class="card">
-      
-      <h2>Results — and what they support</h2>
-      
-          <div class="result-row">
-            <p class="claim">28.4 BLEU on WMT14</p>
-            <p class="evidence"><span class="r-label">Evidence</span> new SOTA</p>
-            <p class="caveat"><span class="r-label">Caveat</span> single task family</p>
-          </div>
-        
+    <section class="summary-panel adaptive-section section-plain_summary">
+      <div class="label">Plain-language summary</div>
+      <p>The Transformer replaces recurrent sequence models with self-attention: every token can directly look at every other token and decide what matters. This makes training much more parallelizable than RNNs and captures long-range relationships more cleanly. The paper proves the idea on machine translation, where it reaches strong BLEU scores with far less training cost than previous recurrent systems. Its deeper importance is architectural: it separates sequence modeling from step-by-step recurrence, creating the template that later language models scaled into today&#x27;s LLMs.</p>
     </section>
-    
 
 
+    <section class="adaptive-section section-problem_context" aria-labelledby="section-problem_context">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">problem context</div>
+          <h2 id="section-problem_context">The bottleneck before Transformers</h2>
+        </div>
+        <p class="section-summary">RNNs processed tokens in order, which made long sequences slow and hard to parallelize.</p>
+      </div>
+      <div class="section-body"><p>Before this paper, strong sequence models usually read text step by step. That matched language order, but it limited parallel training and made long-distance dependencies difficult. The Transformer asks a cleaner question: what if each token could directly attend to the rest of the sentence?</p>
+<div class="visual visual-comparison"><div class="visual-title">Old sequence habit vs. Transformer move</div><div class="comparison-grid">
+        <div class="compare-card">
+          <div class="label">RNN-style</div>
+          <p>Read token 1, update state; read token 2, update state; keep stepping forward.</p>
+        </div>
 
+        <div class="compare-card">
+          <div class="label">Transformer-style</div>
+          <p>Let all tokens compare with one another in parallel using attention.</p>
+        </div>
+        </div></div>
+<div class="visual visual-cards"><div class="visual-title">Why the change mattered</div><div class="metric-grid">
+        <div class="metric-card">
+          <div class="label">Parallelism</div>
+          <strong>Higher</strong>
+          <p>Training can use modern hardware more efficiently.</p>
+        </div>
 
-    <section class="card">
-      
-      <h2>Knowledge graph</h2>
-      
-        <p class="graph-help">Drag to pan, scroll to zoom, click a node to highlight its connections.</p>
-        <div id="kg" class="kg-container"></div>
-        <script id="graph-data" type="application/json">{"nodes": [{"id": "attn", "label": "Attention", "type": "technique"}, {"id": "rnn", "label": "RNN", "type": "prior_work"}], "edges": [{"from": "this_paper", "to": "attn", "label": "builds_on"}, {"from": "this_paper", "to": "rnn", "label": "outperforms"}]}</script>
-        
+        <div class="metric-card">
+          <div class="label">Distance</div>
+          <strong>Direct links</strong>
+          <p>Far-apart words can interact without many recurrent steps.</p>
+        </div>
+
+        <div class="metric-card">
+          <div class="label">Template</div>
+          <strong>Scalable</strong>
+          <p>The architecture became the base pattern for later LLMs.</p>
+        </div>
+        </div></div></div>
     </section>
-    
 
-    <section class="card">
-      <div class="label">Starts from your network</div>
-      <h2>People worth reaching out to</h2>
-      <div class="people-grid">
-          <div class="person-card">
-            <h3>Sam Lee</h3>
-            <p class="role">ML Researcher, Acme Labs</p>
-            <p class="conn-path">1st-degree: your connection</p>
-            <p class="why">Works on attention.</p>
-            <span class="li-hint">Search LinkedIn for &#x27;Sam Lee Acme Labs&#x27;</span>
+
+    <section class="adaptive-section section-core_contribution" aria-labelledby="section-core_contribution">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">core contribution</div>
+          <h2 id="section-core_contribution">The core contribution</h2>
+        </div>
+        <p class="section-summary">Self-attention plus feed-forward blocks can replace recurrence for sequence transduction.</p>
+      </div>
+      <div class="section-body"><p>The paper introduces the encoder-decoder Transformer: stacked attention layers, position-wise feed-forward networks, residual connections, layer normalization, and positional encodings. The bold claim is not that attention is useful; it is that attention can be the main computational primitive.</p>
+<div class="visual visual-flow"><div class="visual-title">Transformer block intuition</div><div class="flow-grid">
+        <div class="flow-node">
+          <span class="step-number">1</span>
+          <strong>Token embeddings</strong>
+          <p>Words become vectors.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">2</span>
+          <strong>Positional encoding</strong>
+          <p>Order information is added because there is no recurrence.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">3</span>
+          <strong>Multi-head attention</strong>
+          <p>Tokens look at each other through several learned views.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">4</span>
+          <strong>Feed-forward layer</strong>
+          <p>Each position is transformed after mixing context.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">5</span>
+          <strong>Stacked layers</strong>
+          <p>Repeated blocks build richer representations.</p>
+        </div>
+        </div></div></div>
+    </section>
+
+
+    <section class="adaptive-section section-architecture_or_pipeline" aria-labelledby="section-architecture_or_pipeline">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">architecture or pipeline</div>
+          <h2 id="section-architecture_or_pipeline">What multi-head attention buys you</h2>
+        </div>
+        <p class="section-summary">Multiple attention heads let the model track different relationships at the same time.</p>
+      </div>
+      <div class="section-body"><p>A single attention operation can focus on one pattern. Multi-head attention repeats the operation in different learned subspaces, so one head can track syntax while another tracks alignment or long-range reference.</p>
+<div class="visual visual-matrix"><div class="visual-title">Architectural trade-offs</div><div class="matrix-grid" style="--matrix-cols:3"><div></div><div class="axis-label">Benefit</div><div class="axis-label">Cost</div><div class="axis-label">Attention</div>
+            <div class="matrix-cell tone-good">
+              <strong>Global context</strong>
+              <p>Any token can use information from any other token.</p>
+            </div>
+
+            <div class="matrix-cell tone-caution">
+              <strong>Quadratic length cost</strong>
+              <p>Longer contexts become expensive.</p>
+            </div>
+            <div class="axis-label">No recurrence</div>
+            <div class="matrix-cell tone-good">
+              <strong>Parallel training</strong>
+              <p>Sequences do not have to be processed one step at a time.</p>
+            </div>
+
+            <div class="matrix-cell tone-caution">
+              <strong>Needs position signal</strong>
+              <p>Order must be injected explicitly.</p>
+            </div>
+            </div></div></div>
+    </section>
+
+
+    <section class="adaptive-section section-method_walkthrough" aria-labelledby="section-method_walkthrough">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">method walkthrough</div>
+          <h2 id="section-method_walkthrough">The algorithm in plain steps</h2>
+        </div>
+        <p class="section-summary">Queries ask, keys advertise, values carry information.</p>
+      </div>
+      <div class="section-body"><p>Self-attention works by turning each token into a query, key, and value. A token compares its query to other tokens&#x27; keys, uses softmax to form weights, and blends their values. This produces a context-aware token representation.</p>
+<div class="visual visual-flow"><div class="visual-title">Self-attention calculation</div><div class="flow-grid">
+        <div class="flow-node">
+          <span class="step-number">1</span>
+          <strong>Make Q, K, V</strong>
+          <p>Each token gets query, key, and value vectors.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">2</span>
+          <strong>Score matches</strong>
+          <p>Queries compare against keys.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">3</span>
+          <strong>Softmax weights</strong>
+          <p>Scores become attention probabilities.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">4</span>
+          <strong>Weighted sum</strong>
+          <p>Values are blended according to those probabilities.</p>
+        </div>
+        </div></div></div>
+    </section>
+
+
+    <section class="adaptive-section section-results_interpretation" aria-labelledby="section-results_interpretation">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">results interpretation</div>
+          <h2 id="section-results_interpretation">What the results established</h2>
+        </div>
+        <p class="section-summary">The paper showed better translation quality with much faster training, making the architecture hard to ignore.</p>
+      </div>
+      <div class="section-body"><p>The Transformer reached 28.4 BLEU on WMT 2014 English-to-German and 41.8 BLEU on English-to-French while requiring substantially less training cost than prior strong systems. The key evidence is not just accuracy; it is accuracy plus trainability.</p>
+<div class="visual visual-bar_chart"><div class="visual-title">Headline translation results</div><div class="bar-list">
+        <div class="bar-row">
+          <div class="bar-title"><span>EN-DE BLEU</span><span>28.4</span></div>
+          <div class="bar-track"><span style="width:63.11%"></span></div>
+          <p>WMT 2014 English-to-German.</p>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-title"><span>EN-FR BLEU</span><span>41.8</span></div>
+          <div class="bar-track"><span style="width:92.89%"></span></div>
+          <p>WMT 2014 English-to-French.</p>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-title"><span>Parallelism signal</span><span>9</span></div>
+          <div class="bar-track"><span style="width:90.0%"></span></div>
+          <p>Major practical advantage over recurrence.</p>
+        </div>
+        </div></div></div>
+    </section>
+
+
+    <section class="adaptive-section section-limitations_and_caveats" aria-labelledby="section-limitations_and_caveats">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">limitations and caveats</div>
+          <h2 id="section-limitations_and_caveats">What the paper did not yet prove</h2>
+        </div>
+        <p class="section-summary">It proved a new sequence architecture, not the full modern LLM story.</p>
+      </div>
+      <div class="section-body"><p>The paper is narrower than its historical impact. It focuses on translation and does not yet demonstrate instruction following, emergent scaling behavior, retrieval, agents, or long-context efficiency.</p>
+<ul><li>Evaluation focuses mainly on machine translation and parsing.</li><li>Sequence length still matters because attention compares tokens pairwise.</li><li>The paper does not yet show the large-scale language-modeling behavior that later made Transformers dominant.</li><li>Attention is powerful but computationally expensive at long context lengths.</li></ul></div>
+    </section>
+
+
+    <section class="adaptive-section section-real_world_implications" aria-labelledby="section-real_world_implications">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">real world implications</div>
+          <h2 id="section-real_world_implications">Why this became infrastructure</h2>
+        </div>
+        <p class="section-summary">Transformers turned sequence modeling into a hardware-friendly scaling problem.</p>
+      </div>
+      <div class="section-body"><p>The practical lesson was simple: architecture that trains efficiently at scale can reshape the whole field. Transformers became the default base for machine translation, language modeling, code models, vision-language systems, and many retrieval or recommendation systems.</p>
+<div class="visual visual-timeline"><div class="visual-title">After the paper</div><div class="timeline-list">
+        <div class="timeline-item">
+          <span>2017</span>
+          <div>
+            <strong><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer">Transformer</a></strong>
+            <p>Attention replaces recurrence for translation.</p>
           </div>
         </div>
-    </section>
-    
 
-    <section class="card notes-card" data-slug="attention">
-      <div class="label">Your notes</div>
-      <h2>Notes</h2>
-      <p class="notes-help">
-        These persist. Served via <code>serve.py</code> they save to
-        <code>papers/attention/notes.md</code>;
-        opened as a file they save to your browser.
-        <span id="notes-status" class="notes-status"></span>
-      </p>
-      <div id="notes" class="notes-editor"
-           data-placeholder="Type your notes here… (Markdown)"></div>
-      <div class="notes-actions">
-        <button id="notes-save" type="button">Save</button>
-        <button id="notes-download" type="button">Download notes.md</button>
+        <div class="timeline-item">
+          <span>2018</span>
+          <div>
+            <strong><a href="https://arxiv.org/abs/1810.04805" target="_blank" rel="noreferrer">BERT</a></strong>
+            <p>Transformer encoders dominate language understanding.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <span>2020</span>
+          <div>
+            <strong><a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noreferrer">GPT-3</a></strong>
+            <p>Decoder-only Transformers show powerful few-shot behavior.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <span>2022</span>
+          <div>
+            <strong><a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noreferrer">FlashAttention</a></strong>
+            <p>Systems work attacks attention efficiency.</p>
+          </div>
+        </div>
+        </div></div></div>
+    </section>
+
+
+    <section class="adaptive-section section-learning_path" aria-labelledby="section-learning_path">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">learning path</div>
+          <h2 id="section-learning_path">Three papers to read next</h2>
+        </div>
+        <p class="section-summary">These show how Transformers became the backbone of modern NLP and how the field addressed their costs.</p>
       </div>
+      <div class="section-body"><div class="learning-grid">
+        <article class="learning-card">
+          <span class="read-number">1</span>
+          <h3><a href="https://arxiv.org/abs/1810.04805" target="_blank" rel="noreferrer">BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding</a></h3>
+          <p>Shows how Transformer encoders became dominant for language understanding.</p>
+          <p class="why-read"><strong>Read for:</strong> Pretraining and fine-tuning.</p>
+        </article>
+
+        <article class="learning-card">
+          <span class="read-number">2</span>
+          <h3><a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noreferrer">Language Models are Few-Shot Learners</a></h3>
+          <p>Shows the scaling path from Transformers to general-purpose language models.</p>
+          <p class="why-read"><strong>Read for:</strong> Decoder-only scaling and few-shot behavior.</p>
+        </article>
+
+        <article class="learning-card">
+          <span class="read-number">3</span>
+          <h3><a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noreferrer">FlashAttention: Fast and Memory-Efficient Exact Attention</a></h3>
+          <p>Explains the systems pressure created by quadratic attention cost.</p>
+          <p class="why-read"><strong>Read for:</strong> Efficient attention implementation.</p>
+        </article>
+        </div></div>
     </section>
-    
-</div>
-<script>
-(function() {
-  var el = document.getElementById('graph-data');
-  var container = document.getElementById('kg');
-  if (!el || !container || typeof vis === 'undefined') return;
-  var data = JSON.parse(el.textContent);
 
-  var typeColor = {
-    technique:  { bg: '#eef2fa', bd: '#2d4a8a' },
-    dataset:    { bg: '#ecf5ef', bd: '#2e6f4a' },
-    prior_work: { bg: '#f3eee6', bd: '#7a5a2a' },
-    claim:      { bg: '#fdf3e7', bd: '#b85c00' },
-    domain:     { bg: '#f0ecf5', bd: '#5e3d8a' },
-    concept:    { bg: '#f0f0f0', bd: '#555555' }
-  };
 
-  var nodes = data.nodes.map(function(n) {
-    var c = typeColor[n.type] || typeColor.concept;
-    return {
-      id: n.id,
-      label: n.label,
-      color: { background: c.bg, border: c.bd, highlight: { background: c.bd, border: c.bd } },
-      font: { color: '#1a1a1a', size: 14, face: 'system-ui' },
-      shape: 'box',
-      margin: 10,
-      borderWidth: 1.5
-    };
-  });
+    <section class="adaptive-section section-quiz" aria-labelledby="section-quiz">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">quiz</div>
+          <h2 id="section-quiz">Check your understanding</h2>
+        </div>
+        <p class="section-summary">Five questions that test the method, field context, and product implications.</p>
+      </div>
+      <div class="section-body"><div class="quiz-grid">
+        <article class="quiz-card">
+          <div class="quiz-topic">
+            <span>Paper comprehension</span>
+            <div class="label">Question 1</div>
+          </div>
+          <div>
+            <h3>What does the Transformer remove compared with many earlier sequence models?</h3>
+            <ol class="choices" type="A"><li>Recurrence</li><li>Embeddings</li><li>Training data</li><li>Optimization</li></ol>
+            <details class="answer">
+              <summary>Show answer</summary>
+              <p><strong>Correct:</strong> Recurrence</p>
+              <p>The paper replaces recurrent sequence processing with attention-based blocks.</p>
+            </details>
+          </div>
+        </article>
 
-  var edges = data.edges.map(function(e) {
-    return {
-      from: e.from, to: e.to,
-      label: e.label,
-      arrows: 'to',
-      color: { color: '#bcb9b0', highlight: '#2d4a8a' },
-      font: { size: 11, color: '#6b6b6b', strokeWidth: 0, align: 'middle' },
-      smooth: { type: 'continuous' }
-    };
-  });
+        <article class="quiz-card">
+          <div class="quiz-topic">
+            <span>Field understanding</span>
+            <div class="label">Question 2</div>
+          </div>
+          <div>
+            <h3>Why does self-attention help with long-range dependencies?</h3>
+            <ol class="choices" type="A"><li>Any token can directly attend to any other token</li><li>It deletes rare words</li><li>It only reads the first sentence</li><li>It uses no parameters</li></ol>
+            <details class="answer">
+              <summary>Show answer</summary>
+              <p><strong>Correct:</strong> Any token can directly attend to any other token</p>
+              <p>Direct token-to-token comparison avoids passing information through many recurrent steps.</p>
+            </details>
+          </div>
+        </article>
 
-  new vis.Network(container, { nodes: nodes, edges: edges }, {
-    physics: { stabilization: { iterations: 200 }, barnesHut: { springLength: 150 } },
-    interaction: { hover: true, tooltipDelay: 200 }
-  });
-})();
-</script>
-<script>
-(function() {
-  var notes = document.getElementById('notes');
-  var card = document.querySelector('.notes-card');
-  if (!notes || !card) return;
-  var slug = card.getAttribute('data-slug') || (document.title || 'paper');
-  var statusEl = document.getElementById('notes-status');
-  var saveBtn = document.getElementById('notes-save');
-  var dlBtn = document.getElementById('notes-download');
-  var lsKey = 'paper-notes:' + slug;
-  var served = location.protocol === 'http:' || location.protocol === 'https:';
+        <article class="quiz-card">
+          <div class="quiz-topic">
+            <span>Business insight</span>
+            <div class="label">Question 3</div>
+          </div>
+          <div>
+            <h3>What made the architecture commercially important later?</h3>
+            <ol class="choices" type="A"><li>It scaled well on parallel hardware</li><li>It required no compute</li><li>It removed the need for data</li><li>It guaranteed factuality</li></ol>
+            <details class="answer">
+              <summary>Show answer</summary>
+              <p><strong>Correct:</strong> It scaled well on parallel hardware</p>
+              <p>Efficient training at scale made Transformers a platform architecture.</p>
+            </details>
+          </div>
+        </article>
 
-  function setStatus(msg) { if (statusEl) statusEl.textContent = msg; }
+        <article class="quiz-card">
+          <div class="quiz-topic">
+            <span>Product insight</span>
+            <div class="label">Question 4</div>
+          </div>
+          <div>
+            <h3>What product risk follows from quadratic attention cost?</h3>
+            <ol class="choices" type="A"><li>Long-context features can become expensive</li><li>All outputs are automatically private</li><li>Translation quality cannot improve</li><li>Models cannot be fine-tuned</li></ol>
+            <details class="answer">
+              <summary>Show answer</summary>
+              <p><strong>Correct:</strong> Long-context features can become expensive</p>
+              <p>Attention cost grows with sequence length, so product context windows have cost and latency trade-offs.</p>
+            </details>
+          </div>
+        </article>
 
-  function load() {
-    if (served) {
-      fetch('/api/notes?slug=' + encodeURIComponent(slug))
-        .then(function(r) { return r.ok ? r.text() : ''; })
-        .then(function(text) { if (text) notes.textContent = text; })
-        .catch(function() {
-          var s = localStorage.getItem(lsKey); if (s) notes.textContent = s;
-        });
-    } else {
-      var s = localStorage.getItem(lsKey); if (s) notes.textContent = s;
-    }
-  }
+        <article class="quiz-card">
+          <div class="quiz-topic">
+            <span>Research trivia</span>
+            <div class="label">Question 5</div>
+          </div>
+          <div>
+            <h3>What famous phrase titles the paper?</h3>
+            <ol class="choices" type="A"><li>Attention Is All You Need</li><li>Language Is All You Need</li><li>Recurrence Is Enough</li><li>Transformers Need Convolutions</li></ol>
+            <details class="answer">
+              <summary>Show answer</summary>
+              <p><strong>Correct:</strong> Attention Is All You Need</p>
+              <p>The title captures the paper&#x27;s central architectural claim.</p>
+            </details>
+          </div>
+        </article>
+        </div></div>
+    </section>
 
-  function save() {
-    var text = notes.textContent || '';
-    localStorage.setItem(lsKey, text);
-    if (served) {
-      setStatus('saving…');
-      fetch('/api/notes?slug=' + encodeURIComponent(slug), {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: text
-      }).then(function(r) {
-        setStatus(r.ok ? 'saved to notes.md ✓' : 'save failed (kept in browser)');
-      }).catch(function() { setStatus('offline — kept in browser'); });
-    } else {
-      setStatus('saved in browser ✓');
-    }
-  }
-
-  function download() {
-    var blob = new Blob([notes.textContent || ''], { type: 'text/markdown' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'notes.md';
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
-
-  notes.setAttribute('contenteditable', 'true');
-  var t;
-  notes.addEventListener('input', function() {
-    setStatus('unsaved…');
-    clearTimeout(t);
-    t = setTimeout(save, 800);
-  });
-  if (saveBtn) saveBtn.addEventListener('click', save);
-  if (dlBtn) dlBtn.addEventListener('click', download);
-  load();
-})();
-</script>
+<footer class="footer">
+  Generated from structured analysis as a static visual briefing.
+</footer>
+</main>
 </body>
 </html>

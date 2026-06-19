@@ -1,0 +1,34 @@
+{
+  "pulled": [
+    {
+      "canonical_id": "2401.05654",
+      "openalex_id": null,
+      "doi": null,
+      "arxiv_id": "2401.05654",
+      "selected_date": "2026-06-19",
+      "profile": "manual",
+      "score": null,
+      "slug": "amie"
+    },
+    {
+      "canonical_id": "1706.03762",
+      "openalex_id": null,
+      "doi": null,
+      "arxiv_id": "1706.03762",
+      "selected_date": "2026-06-19",
+      "profile": "manual",
+      "score": null,
+      "slug": "attention"
+    },
+    {
+      "canonical_id": "2309.07864",
+      "openalex_id": null,
+      "doi": "10.48550/arXiv.2309.07864",
+      "arxiv_id": "2309.07864",
+      "selected_date": "2026-06-19",
+      "profile": "llm-agents",
+      "score": null,
+      "slug": "llm-agents-survey"
+    }
+  ]
+}

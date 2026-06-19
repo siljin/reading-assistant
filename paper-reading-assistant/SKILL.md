@@ -17,7 +17,9 @@ Each paper folder holds the source pointer, canonical analysis JSON, and generat
 
 ```text
 papers/<slug>/        source.md / paper.pdf, analysis.json, report.html
-paper-reading-assistant/scripts/   new_paper.py, render_report.py
+profiles/<topic>.json topic profile for automatic paper selection
+paper-reading-assistant/ORCHESTRATOR.md end-to-end chat-agent workflow
+paper-reading-assistant/scripts/   new_paper.py, pull_paper.py, workflow_status.py, render_report.py
 ```
 
 Resolve script paths relative to this skill folder. The repo root is two levels above `scripts/`.
@@ -35,6 +37,58 @@ Resolve script paths relative to this skill folder. The repo root is two levels 
 8. **Present** the headline finding and local path.
 
 Do not hand-write the final HTML. The renderer is the path to `report.html`.
+
+---
+
+## End-To-End Orchestration
+
+When the user asks to run the full workflow, read
+`paper-reading-assistant/ORCHESTRATOR.md` and follow it exactly.
+
+The orchestrator is agent-facing: scripts pull, validate, and render; the chat
+agent performs the reasoning step that completes `analysis.json`. Do not add an
+LLM API key, automate a chat UI, start a server, or run a daemon.
+
+Use `workflow_status.py` before rendering:
+
+```bash
+python paper-reading-assistant/scripts/workflow_status.py --slug <slug>
+```
+
+Render only when the status is `ready-to-render` or `rendered`.
+
+---
+
+## Optional Step - Automatically Select A Paper
+
+When the user asks to discover a paper automatically, use:
+
+```bash
+python paper-reading-assistant/scripts/pull_paper.py --profile profiles/<topic>.json --dry-run
+python paper-reading-assistant/scripts/pull_paper.py --profile profiles/<topic>.json
+```
+
+The puller selects exactly one paper per run using OpenAlex metadata and the profile's relevance constraints. Profiles can optionally include curated sources such as `dair-ai-weekly`, which adds a transparent DAIR.AI trend signal without replacing OpenAlex discovery. It creates `papers/<slug>/source.md`, starter `analysis.json`, and updates `papers/.pulled.json` so recurring runs skip already selected papers. It does not download PDFs or call an LLM API.
+
+If no existing profile fits, create a compact profile with:
+
+```json
+{
+  "name": "topic-name",
+  "keywords": [],
+  "openalex_topics": [],
+  "arxiv_categories": [],
+  "must_include": [],
+  "must_exclude": [],
+  "recency_days": 730,
+  "min_year": 2020,
+  "max_results_to_score": 50,
+  "curated_sources": [],
+  "curated_max_weeks": 8
+}
+```
+
+After pulling, continue with Step 1 using the generated `source.md`.
 
 ---
 

@@ -40,8 +40,8 @@ No `pip install` is required for the included scripts.
 
 Agent-driven:
 
-1. Ask the assistant to read a paper, for example: `Read this paper: https://arxiv.org/abs/1706.03762`.
-2. The assistant scaffolds `papers/<slug>/`, reads the paper, writes `analysis.json`, renders `report.html`, and tells you where to open it.
+1. Ask the assistant to run the orchestrator, for example: `Use the reading assistant orchestrator to pull one paper with profiles/medical-ai.json, complete analysis.json, render report.html, and verify it.`
+2. The assistant follows `paper-reading-assistant/ORCHESTRATOR.md`, writes `analysis.json`, renders `report.html`, and tells you where to open it.
 3. Open `papers/<slug>/report.html` directly in your browser.
 
 Manual:
@@ -57,6 +57,24 @@ python paper-reading-assistant/scripts/render_report.py \
   --output papers/<slug>/report.html \
   --slug <slug>
 ```
+
+Automatic pull:
+
+```bash
+python paper-reading-assistant/scripts/pull_paper.py --profile profiles/medical-ai.json --dry-run
+python paper-reading-assistant/scripts/pull_paper.py --profile profiles/medical-ai.json
+```
+
+The puller selects exactly one eligible paper per run using OpenAlex metadata, writes `source.md` and starter `analysis.json`, and records the selected paper in `papers/.pulled.json` so recurring runs do not pick the same paper again. Profiles can optionally add curated trend signals, currently `dair-ai-weekly` from DAIR.AI's AI Papers of the Week, but OpenAlex remains the primary discovery source. It does not download PDFs or call an LLM API; report completion remains agent-assisted.
+
+Agent-orchestrated end-to-end flow:
+
+```bash
+python paper-reading-assistant/scripts/workflow_status.py --latest
+python paper-reading-assistant/scripts/workflow_status.py --slug <slug>
+```
+
+`workflow_status.py` is a read-only helper for the chat agent. It reports whether a paper is `staged`, `analysis-incomplete`, `ready-to-render`, or `rendered`. The LLM reasoning happens only when the chat agent reads `source.md` and completes `analysis.json`; no repo script calls a model.
 
 ---
 
@@ -97,11 +115,14 @@ The agent workflow lives at `paper-reading-assistant/`:
 
 ```text
 paper-reading-assistant/
+  ORCHESTRATOR.md                 end-to-end chat-agent workflow
   SKILL.md                       workflow for paper-to-report generation
   references/analysis-rubric.md  analysis and report-plan guidance
   scripts/
     new_paper.py        scaffold papers/<slug>/
+    pull_paper.py       select one paper from a topic profile
     render_report.py    analysis.json -> report.html
+    workflow_status.py validate workflow readiness
 ```
 
 ---
@@ -126,6 +147,29 @@ render_report.py
         ▼
 report.html
 ```
+
+Automatic discovery uses this same path:
+
+```text
+profiles/<topic>.json
+   │
+   ▼
+pull_paper.py  ──► OpenAlex search + optional curated enrichment + scoring rubric
+   │
+   ├─► papers/.pulled.json  (dedupe ledger)
+   ▼
+papers/<slug>/source.md + analysis.json
+```
+
+Selection score is out of 100:
+
+- Relevance: 35
+- Citation signal: 20
+- Recency/trend: 15
+- Curated popularity: 10
+- Source credibility: 8
+- Accessibility: 7
+- Novelty/diversity: 5
 
 ---
 

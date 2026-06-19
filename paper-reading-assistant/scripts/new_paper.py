@@ -3,15 +3,14 @@
 new_paper.py — Scaffold a per-paper folder inside the repo.
 
 Everything about one paper lives together under papers/<slug>/ so it travels
-with the repo: the source, the analysis JSON, the rendered HTML report, and the
-persistent notes.
+with the repo: the source, the structured analysis JSON, and the rendered HTML
+report.
 
     papers/<slug>/
       paper.pdf            (you drop the PDF here, if you have one)
       source.md            (or paste text / a link here)
-      analysis.json        (the agent fills this; see analysis.template.json)
+      analysis.json        (the agent fills this)
       report.html          (render_report.py writes this)
-      notes.md             (your notes; serve.py keeps this in sync)
 
 Usage:
     python paper-reading-assistant/scripts/new_paper.py \\
@@ -53,7 +52,43 @@ ANALYSIS_TEMPLATE = {
     "implementation": {"feasibility": "", "requirements": [], "cheapest_validation": ""},
     "implications": {"research": [], "practice": [], "personal": []},
     "knowledge_graph": {"nodes": [], "edges": []},
-    "people": [],
+    "report_plan": {
+        "paper_archetype": "",
+        "reader_goal": "",
+        "narrative_arc": [],
+        "sections": [
+            {
+                "type": "problem_context",
+                "title": "",
+                "takeaway": "",
+                "content": "",
+                "visuals": [],
+                "caveats": [],
+            },
+            {
+                "type": "learning_path",
+                "title": "Three papers to read next",
+                "takeaway": "",
+                "papers": [
+                    {"title": "", "url": "", "why": "", "read_for": ""}
+                ],
+            },
+            {
+                "type": "quiz",
+                "title": "Check your understanding",
+                "takeaway": "",
+                "questions": [
+                    {
+                        "category": "",
+                        "question": "",
+                        "choices": ["", "", "", ""],
+                        "answer": "",
+                        "explanation": "",
+                    }
+                ],
+            },
+        ],
+    },
 }
 
 
@@ -69,6 +104,24 @@ def write_if_absent(path: Path, content: str) -> bool:
     return True
 
 
+def scaffold_paper(title: str, slug: str | None = None) -> Path:
+    slug = slug or slugify(title)
+    folder = PAPERS_DIR / slug
+    folder.mkdir(parents=True, exist_ok=True)
+
+    tmpl = json.loads(json.dumps(ANALYSIS_TEMPLATE))
+    tmpl["paper"]["title"] = title
+    tmpl["slug"] = slug
+
+    write_if_absent(folder / "analysis.json",
+                    json.dumps(tmpl, indent=2, ensure_ascii=False))
+    write_if_absent(folder / "source.md",
+                    f"# Source: {title}\n\n"
+                    "Paste the paper text, a source link, DOI, or extraction "
+                    "details here. Or drop `paper.pdf` in this folder.\n")
+    return folder
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--title", required=True)
@@ -76,29 +129,17 @@ def main():
     args = ap.parse_args()
 
     slug = args.slug or slugify(args.title)
-    folder = PAPERS_DIR / slug
-    folder.mkdir(parents=True, exist_ok=True)
-
-    tmpl = json.loads(json.dumps(ANALYSIS_TEMPLATE))
-    tmpl["paper"]["title"] = args.title
-    tmpl["slug"] = slug
+    folder = scaffold_paper(args.title, slug)
 
     created = []
-    if write_if_absent(folder / "analysis.template.json",
-                        json.dumps(tmpl, indent=2, ensure_ascii=False)):
-        created.append("analysis.template.json")
-    if write_if_absent(folder / "source.md",
-                        f"# Source: {args.title}\n\n"
-                        "Paste the paper text, a link, or notes about where the "
-                        "PDF lives here. Or drop `paper.pdf` in this folder.\n"):
-        created.append("source.md")
-    if write_if_absent(folder / "notes.md", f"# Notes — {args.title}\n\n"):
-        created.append("notes.md")
+    for name in ["analysis.json", "source.md"]:
+        if (folder / name).exists():
+            created.append(name)
 
     print(f"slug: {slug}")
     print(f"folder: {folder}")
-    print(f"created: {', '.join(created) if created else '(all files already existed)'}")
-    print("\nNext: fill analysis.template.json -> analysis.json, then render:")
+    print(f"available: {', '.join(created) if created else '(all files already existed)'}")
+    print("\nNext: fill analysis.json, then render:")
     print(f"  python paper-reading-assistant/scripts/render_report.py \\")
     print(f"    --input papers/{slug}/analysis.json \\")
     print(f"    --output papers/{slug}/report.html --slug {slug}")

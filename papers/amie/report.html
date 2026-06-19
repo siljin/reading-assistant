@@ -6,551 +6,725 @@
 <title>Towards Conversational Diagnostic AI</title>
 <style>
 :root {
-  --bg: #fafaf7;
+  --paper: #f7f4ed;
+  --paper-2: #eef6f3;
+  --ink: #17211d;
+  --muted: #5d6a63;
   --card: #ffffff;
-  --ink: #1a1a1a;
-  --muted: #6b6b6b;
-  --line: #e8e6e0;
-  --accent: #2d4a8a;
-  --accent-soft: #eef2fa;
-  --warn: #b85c00;
-  --warn-soft: #fdf3e7;
-  --good: #2e6f4a;
-  --good-soft: #ecf5ef;
-  --eli5: #6a3fb5;
-  --eli5-soft: #f1ecfa;
-  --radius: 10px;
+  --line: #d9dfd8;
+  --green: #2e6f4a;
+  --green-2: #dcebe4;
+  --amber: #b56516;
+  --amber-2: #fff0d8;
+  --blue: #2d4a8a;
+  --blue-2: #e7edf8;
+  --red: #9f3f33;
+  --red-2: #f8e4df;
+  --shadow: 0 18px 45px rgba(43, 55, 48, 0.09);
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
-  background: var(--bg);
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #fbf8ef 0%, #eef6f3 46%, #f8faf7 100%);
   color: var(--ink);
-  line-height: 1.55;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
 }
-.container { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
-
-.paper-header { margin-bottom: 32px; }
-.paper-header h1 {
-  font-size: 32px; line-height: 1.2; margin: 0 0 12px;
-  letter-spacing: -0.01em; font-weight: 600;
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background: rgba(23, 33, 29, 0.08); border-radius: 4px; padding: 1px 5px; }
+.page { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+.hero {
+  min-height: 82vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(310px, 0.7fr);
+  gap: 30px;
+  align-items: center;
+  padding: 44px 0 30px;
 }
-.byline { color: var(--ink); margin: 4px 0; font-size: 15px; }
-.byline .aff { color: var(--muted); font-size: 13px; }
-.meta { color: var(--muted); font-size: 14px; margin: 4px 0; }
-.links { margin-top: 12px; font-size: 14px; }
-.links a { color: var(--accent); text-decoration: none; margin-right: 4px; }
-.links a:hover { text-decoration: underline; }
-
-.card {
-  background: var(--card);
+.eyebrow, .label {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 12px 0 16px;
+  max-width: 820px;
+  font-size: clamp(40px, 7vw, 82px);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+.hero-lede { max-width: 720px; margin: 0; color: #2d3732; font-size: clamp(18px, 2vw, 23px); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.pill {
+  display: inline-flex;
+  border: 1px solid rgba(46, 111, 74, 0.2);
+  border-radius: 999px;
+  padding: 9px 13px;
+  background: rgba(255, 255, 255, 0.66);
+  color: #26352e;
+  font-size: 14px;
+  font-weight: 700;
+}
+.muted-pill { background: var(--amber-2); border-color: #edcf9f; }
+.source-line { margin-top: 18px; color: var(--muted); font-size: 14px; }
+.hero-board, .summary-panel, .adaptive-section {
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 24px 28px;
-  margin-bottom: 20px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow);
 }
-.card h2 {
-  font-size: 18px; font-weight: 600; margin: 0 0 12px;
-  letter-spacing: -0.005em;
+.hero-board { padding: 20px; }
+.hero-board-title { font-size: 22px; font-weight: 900; line-height: 1.18; margin: 10px 0; }
+.hero-board p { color: var(--muted); }
+.slug { font-size: 13px; }
+.summary-panel { padding: 22px; margin: 18px 0 28px; }
+.summary-panel p { max-width: 880px; font-size: 18px; }
+.adaptive-section { margin: 24px 0; padding: 22px; }
+.section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(240px, 0.52fr);
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 18px;
 }
-.card h3 {
-  font-size: 14px; font-weight: 600; margin: 16px 0 6px;
-  text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+.section-head h2 { margin: 6px 0 0; max-width: 780px; font-size: clamp(27px, 4vw, 44px); line-height: 1.08; }
+.section-summary { margin: 0; color: var(--muted); font-size: 16px; }
+.section-body > p { max-width: 820px; }
+.visual {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
 }
-.card p { margin: 8px 0; }
-.card ul { margin: 8px 0; padding-left: 20px; }
-.card li { margin: 4px 0; }
-.card code {
-  background: #f3f1ec; padding: 1px 5px; border-radius: 4px;
-  font-size: 0.9em; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+.visual-title { margin-bottom: 12px; color: var(--ink); font-weight: 900; font-size: 18px; }
+.metric-grid, .learning-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
 }
-.label {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--muted); margin-bottom: 8px; font-weight: 600;
+.metric-card, .learning-card, .flow-node, .compare-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+  padding: 14px;
 }
-
-.headline {
-  background: var(--accent-soft);
-  border-color: #d4dded;
+.metric-card strong { display: block; font-size: 26px; line-height: 1.1; margin: 8px 0; }
+.metric-card p, .learning-card p, .flow-node p, .compare-card p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.flow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
 }
-.headline p {
-  font-size: 19px; line-height: 1.45; margin: 0;
-  font-weight: 500; color: var(--ink);
+.step-number, .read-number {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--green-2);
+  color: var(--green);
+  font-weight: 900;
 }
-
-.eli5 { background: var(--eli5-soft); border-color: #ddd2f0; }
-.eli5 .label { color: var(--eli5); }
-.eli5 h2 { color: var(--eli5); }
-.analogy { font-size: 17px; line-height: 1.5; }
-.analogy-mark {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
-  font-weight: 700; color: var(--eli5); display: block; margin-bottom: 2px;
+.flow-node strong { display: block; margin-top: 10px; }
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--heat-cols), minmax(120px, 1fr));
+  gap: 6px;
 }
-
-.glossary-item {
-  border: 1px solid var(--line); border-radius: 8px;
-  padding: 8px 12px; margin: 6px 0; background: var(--bg);
+.heat-cell {
+  min-height: 54px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+  font-size: 13px;
 }
-.glossary-item summary {
-  cursor: pointer; font-weight: 600; font-size: 14px;
+.heat-head { background: var(--ink); color: #fff; font-weight: 900; text-align: center; }
+.heat-row { font-weight: 900; }
+.heat-win { background: var(--green-2); color: #183529; border-color: #b9d5c6; }
+.heat-caution { background: var(--amber-2); color: #6d3f12; border-color: #edcf9f; }
+.funnel-list { display: grid; gap: 8px; }
+.funnel-step {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr) 112px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
 }
-.glossary-item p { margin: 8px 0 2px; font-size: 14px; color: #333; }
-
-.paper-figure {
-  margin: 12px 0; padding: 12px; border: 1px solid var(--line);
-  border-radius: 8px; background: var(--bg);
+.funnel-step p { margin: 0; color: var(--muted); font-size: 14px; }
+.status {
+  justify-self: end;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  background: var(--blue-2);
+  color: var(--blue);
 }
-.paper-figure img { max-width: 100%; height: auto; border-radius: 6px; display: block; }
-.paper-figure figcaption { font-size: 14px; color: #333; margin-top: 8px; }
-
-.demo { margin: 14px 0; }
-.demo h3 { color: var(--ink); text-transform: none; letter-spacing: 0; font-size: 15px; }
-.demo-caption { font-size: 14px; color: var(--muted); margin: 4px 0 8px; }
-.demo-frame {
-  width: 100%; min-height: 220px; border: 1px solid var(--line);
-  border-radius: 8px; background: #fff;
+.status-supported, .status-good { background: var(--green-2); color: var(--green); }
+.status-caution { background: var(--amber-2); color: var(--amber); }
+.status-gap, .status-bad { background: var(--red-2); color: var(--red); }
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--matrix-cols), minmax(130px, 1fr));
+  gap: 8px;
 }
-
-.novelty-tag {
-  display: inline-block; padding: 4px 10px; border-radius: 999px;
-  font-size: 12px; font-weight: 500; margin-bottom: 12px;
-  background: var(--accent-soft); color: var(--accent);
+.axis-label {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
-.before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
-.before-after > div {
-  padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px;
-  background: var(--bg);
+.matrix-cell {
+  min-height: 118px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
 }
-.ba-label {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--muted); font-weight: 600;
+.matrix-cell strong { display: block; margin-bottom: 6px; }
+.matrix-cell p { margin: 0; color: var(--muted); font-size: 13px; }
+.tone-good { background: var(--green-2); border-color: #b9d5c6; }
+.tone-caution { background: var(--amber-2); border-color: #edcf9f; }
+.tone-bad { background: var(--red-2); border-color: #e1b9b3; }
+.timeline-list { display: grid; gap: 10px; }
+.timeline-item {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
 }
-.before-after p { margin: 6px 0 0; font-size: 14px; }
-
-.result-row { padding: 12px 0; border-bottom: 1px solid var(--line); }
-.result-row:last-child { border-bottom: none; }
-.result-row .claim { font-weight: 500; margin: 0 0 6px; }
-.result-row .evidence, .result-row .caveat { font-size: 14px; margin: 4px 0; color: #333; }
-.result-row .caveat { color: var(--warn); }
-.r-label {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
-  font-weight: 600; margin-right: 4px;
+.timeline-item > span {
+  display: inline-flex;
+  justify-content: center;
+  height: max-content;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: var(--blue-2);
+  color: var(--blue);
+  font-weight: 900;
 }
-.result-row .evidence .r-label { color: var(--good); }
-.result-row .caveat .r-label   { color: var(--warn); }
-
-.lim-block { margin-bottom: 12px; }
-.lim-unstated {
-  background: var(--warn-soft); border: 1px solid #f0d9bc;
-  padding: 12px 16px; border-radius: 8px;
+.bar-list { display: grid; gap: 12px; }
+.bar-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-weight: 900; }
+.bar-track { height: 14px; overflow: hidden; border-radius: 999px; background: #e7ece8; }
+.bar-track span { display: block; height: 100%; border-radius: inherit; background: var(--green); }
+.bar-row p { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid var(--line); padding: 10px; text-align: left; vertical-align: top; }
+th { background: var(--ink); color: #fff; }
+.comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.caveat-box {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-left: 5px solid var(--amber);
+  border-radius: 8px;
+  background: var(--amber-2);
 }
-
-.feasibility {
-  display: inline-block; padding: 4px 10px; border-radius: 999px;
-  font-size: 12px; font-weight: 500; margin-bottom: 8px;
-  background: var(--good-soft); color: var(--good);
+.learning-card { display: grid; gap: 10px; }
+.learning-card h3 { margin: 0; font-size: 20px; line-height: 1.18; }
+.why-read { padding: 11px; border-radius: 8px; background: var(--paper-2); color: #26352e; }
+.quiz-grid { display: grid; gap: 12px; }
+.quiz-card {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
 }
-.feas-quarter, .feas-research-project { background: var(--warn-soft); color: var(--warn); }
-
-.imp-grid { display: grid; gap: 14px; }
-.imp-block {
-  padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px;
-  background: var(--bg);
+.quiz-topic { display: flex; flex-direction: column; gap: 8px; }
+.quiz-topic span {
+  width: max-content;
+  max-width: 100%;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: var(--blue-2);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 900;
 }
-.imp-block h3 { margin-top: 0; }
-
-.people-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;
+.quiz-card h3 { margin: 0; font-size: 20px; line-height: 1.25; }
+.choices { display: grid; gap: 8px; margin: 14px 0; padding: 0; list-style: none; }
+.choices li { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfa; }
+.answer { border-radius: 8px; background: var(--green-2); color: #183529; padding: 10px 12px; }
+.answer summary { cursor: pointer; font-weight: 900; }
+.answer p { margin: 8px 0 0; }
+.footer { padding: 32px 0 56px; color: var(--muted); font-size: 14px; }
+@media (max-width: 900px) {
+  .hero, .section-head { grid-template-columns: 1fr; }
+  .heatmap-grid, .matrix-grid { grid-template-columns: 1fr; }
+  .heat-head { text-align: left; }
+  .axis-label { place-items: start; }
 }
-.person-card {
-  padding: 16px; border: 1px solid var(--line); border-radius: 8px;
-  background: var(--bg);
-}
-.person-card h3 {
-  margin: 0 0 4px; font-size: 15px; text-transform: none;
-  letter-spacing: 0; color: var(--ink);
-}
-.person-card .role { font-size: 13px; color: var(--muted); margin: 0 0 6px; }
-.conn-path {
-  font-size: 12px; font-weight: 600; color: var(--good);
-  background: var(--good-soft); border-radius: 6px;
-  padding: 4px 8px; margin: 0 0 8px; display: inline-block;
-}
-.person-card .why { font-size: 14px; margin: 0 0 10px; }
-.li-link {
-  color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500;
-}
-.li-link:hover { text-decoration: underline; }
-.li-hint { color: var(--muted); font-size: 13px; font-style: italic; }
-
-.graph-help { color: var(--muted); font-size: 13px; margin-top: 0; }
-.kg-container {
-  height: 480px; border: 1px solid var(--line); border-radius: 8px;
-  background: var(--bg); margin-top: 12px;
-}
-
-.notes-editor {
-  min-height: 140px; padding: 12px 14px;
-  border: 1px solid var(--line); border-radius: 8px;
-  background: var(--bg); font-size: 15px; line-height: 1.6;
-  outline: none; white-space: pre-wrap;
-}
-.notes-editor:focus { border-color: var(--accent); }
-.notes-editor:empty::before {
-  content: attr(data-placeholder); color: var(--muted);
-}
-.notes-help { font-size: 13px; color: var(--muted); margin-top: 0; }
-.notes-status { font-weight: 600; margin-left: 6px; }
-.notes-actions { margin-top: 10px; display: flex; gap: 8px; }
-.notes-actions button {
-  font: inherit; font-size: 13px; padding: 6px 14px; cursor: pointer;
-  border: 1px solid var(--line); border-radius: 8px; background: #fff;
-}
-.notes-actions button:hover { border-color: var(--accent); color: var(--accent); }
-
 @media (max-width: 640px) {
-  .container { padding: 32px 16px 64px; }
-  .paper-header h1 { font-size: 26px; }
-  .before-after { grid-template-columns: 1fr; }
+  .page { width: min(100% - 22px, 1180px); }
+  .hero { min-height: auto; padding-top: 28px; }
+  .funnel-step, .timeline-item, .quiz-card { grid-template-columns: 1fr; }
+  .status { justify-self: start; }
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/dist/vis-network.min.js"></script>
 </head>
 <body>
-<div class="container">
+<main class="page">
 
-    <header class="paper-header">
-      <h1>Towards Conversational Diagnostic AI</h1>
-      <p class="byline">Tao Tu <span class='aff'>(Google Research / Google DeepMind)</span>, Anil Palepu <span class='aff'>(Google Research / Google DeepMind)</span>, Mike Schaekermann <span class='aff'>(Google Research / Google DeepMind)</span>, Khaled Saab <span class='aff'>(Google Research / Google DeepMind)</span>, Ryutaro Tanno <span class='aff'>(Google Research / Google DeepMind)</span>, Karan Singhal <span class='aff'>(Google Research / Google DeepMind)</span>, Alan Karthikesalingam <span class='aff'>(Google Research / Google DeepMind)</span>, Vivek Natarajan <span class='aff'>(Google Research / Google DeepMind)</span></p>
-      <p class="meta">arXiv (later Nature, 2025) · 2024</p>
-      <p class="links"><a href="https://arxiv.org/abs/2401.05654" target="_blank">Paper ↗</a></p>
-    </header>
-    
-
-    <section class="card headline">
-      <div class="label">TL;DR</div>
-      <p>An LLM trained by talking to itself (simulated doctor + simulated patient) out-scored real primary-care physicians on diagnostic accuracy and most bedside-manner axes in a blinded, text-only OSCE study.</p>
+    <section class="hero adaptive-section section-title" aria-labelledby="title">
+      <div>
+        <div class="eyebrow">Research paper visual briefing</div>
+        <h1 id="title">Towards Conversational Diagnostic AI</h1>
+        <p class="hero-lede">An LLM trained by talking to itself (simulated doctor + simulated patient) out-scored real primary-care physicians on diagnostic accuracy and most bedside-manner axes in a blinded, text-only OSCE study.</p>
+        <div class="hero-actions">
+          <span class="pill">understand the evidence and judge product/deployment readiness</span>
+          <span class="pill muted-pill">arXiv (later Nature, 2025) / 2024 / Clinical</span>
+        </div>
+        <p class="source-line">
+          Tao Tu, Anil Palepu, Mike Schaekermann, Khaled Saab, Ryutaro Tanno, Karan Singhal, Alan Karthikesalingam, Vivek Natarajan<br>
+          <a href="https://arxiv.org/abs/2401.05654" target="_blank" rel="noreferrer">Open paper</a>
+        </p>
+      </div>
+      <aside class="hero-board">
+        <div class="label">Report recipe</div>
+        <p class="hero-board-title">Adaptive structure, consistent design.</p>
+        <p>This page is generated from <code>analysis.json</code>. The paper decides the section order; the renderer keeps the layout readable.</p>
+        <p class="slug">Slug: <code>amie</code></p>
+      </aside>
     </section>
-    
 
-    <section class="card eli5">
-      <div class="label">No background needed</div>
-      <h2>Explain it simply</h2>
-      <p class="analogy"><span class="analogy-mark">Think of it like</span> a medical student who practices by role-playing both the doctor AND the patient, millions of times, grading every conversation, until the doctor half gets very good.</p><p>AMIE is a chatbot built to take a patient&#x27;s history and reach a diagnosis through conversation. To get good without endless real patients, it practices in a simulator where one copy plays the patient and another plays the doctor, and an automatic grader gives feedback. When tested against 20 real doctors over text chats, specialists rated AMIE higher on diagnosis and on most communication qualities.</p>
-    </section>
-    
 
-    <section class="card">
-      
-      <h2>Plain-language summary</h2>
+    <section class="summary-panel adaptive-section section-plain_summary">
+      <div class="label">Plain-language summary</div>
       <p>Good diagnosis starts with a good conversation: asking the right questions, in the right order, with empathy. The authors built <strong>AMIE</strong>, an LLM tuned specifically for that diagnostic dialogue. The trick is <strong>self-play</strong>: instead of needing huge volumes of real doctor-patient transcripts, AMIE practices inside a simulated clinic — one model instance acts as the patient, another as the doctor, and an automated critic scores each exchange and feeds back corrections. This lets training scale across many diseases and contexts cheaply. They then ran a <strong>randomized, double-blind crossover OSCE</strong> (a standardized clinical exam format) with validated patient-actors across 149 scenarios from Canada, the UK and India, pitting AMIE against 20 primary-care physicians over text chat. Specialists scored AMIE ahead on 28 of 32 axes; patient-actors on 24 of 26. The catch: it&#x27;s <strong>text-only</strong>, the doctors were boxed into an unfamiliar chat interface, and &#x27;beats doctors on a chat exam&#x27; is not &#x27;safe to deploy in a real clinic.&#x27;</p>
     </section>
-    
-
-    <section class="card glossary">
-      <div class="label">Tap any term</div>
-      <h2>Jargon decoder</h2>
-      
-          <details class="glossary-item">
-            <summary>AMIE</summary>
-            <p>Articulate Medical Intelligence Explorer — the diagnostic chatbot this paper introduces.</p>
-          </details>
-        
-          <details class="glossary-item">
-            <summary>Self-play</summary>
-            <p>The model practices against copies of itself — here, one plays patient, one plays doctor — so it can train without endless real data.</p>
-          </details>
-        
-          <details class="glossary-item">
-            <summary>OSCE</summary>
-            <p>Objective Structured Clinical Examination — a standardized role-play exam used to test real medical trainees.</p>
-          </details>
-        
-          <details class="glossary-item">
-            <summary>Double-blind crossover</summary>
-            <p>Neither raters nor participants know who&#x27;s the AI vs the human, and each case is seen under both arms — a strong fairness setup.</p>
-          </details>
-        
-          <details class="glossary-item">
-            <summary>PCP</summary>
-            <p>Primary Care Physician — the human baseline AMIE was compared against.</p>
-          </details>
-        
-          <details class="glossary-item">
-            <summary>History-taking</summary>
-            <p>The back-and-forth questioning a clinician uses to gather symptoms before diagnosing.</p>
-          </details>
-        
-    </section>
-    
 
 
-    <section class="card demos">
-      <div class="label">Interactive</div>
-      <h2>Play with it</h2>
-      
-          <div class="demo">
-            <h3>Who scored higher, by rater</h3>
-            <p class="demo-caption">Toggle the rater. Bars show how many evaluation axes AMIE led on. (Specialists: 28 of 32. Patient-actors: 24 of 26.)</p>
-            <iframe class="demo-frame" sandbox="allow-scripts"
-                    srcdoc="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&#x27;utf-8&#x27;&gt;&lt;style&gt;body{font-family:system-ui,sans-serif;margin:12px;color:#1a1a1a;}input,button,select{font:inherit;margin:4px 0;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;button id=b&gt;Switch rater&lt;/button&gt;&lt;div id=lbl style=&#x27;font-weight:600;margin:8px 0&#x27;&gt;&lt;/div&gt;&lt;div id=bar&gt;&lt;/div&gt;&lt;script&gt;var R=[{n:&#x27;Specialist physicians&#x27;,a:28,t:32},{n:&#x27;Patient actors&#x27;,a:24,t:26}],i=0;function draw(){var r=R[i];document.getElementById(&#x27;lbl&#x27;).textContent=r.n+&#x27;: AMIE led on &#x27;+r.a+&#x27; of &#x27;+r.t+&#x27; axes&#x27;;var pct=Math.round(r.a/r.t*100);document.getElementById(&#x27;bar&#x27;).innerHTML=&#x27;&lt;div style=&quot;background:#ecf5ef;border-radius:6px;overflow:hidden&quot;&gt;&lt;div style=&quot;width:&#x27;+pct+&#x27;%;background:#2e6f4a;color:#fff;padding:6px 10px;border-radius:6px&quot;&gt;&#x27;+pct+&#x27;% of axes&lt;/div&gt;&lt;/div&gt;&#x27;}document.getElementById(&#x27;b&#x27;).onclick=function(){i=(i+1)%R.length;draw()};draw()&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;" loading="lazy"></iframe>
-          </div>
-        
-    </section>
-    
-
-    <section class="card">
-      
-      <h2>What&#x27;s actually new</h2>
-      
-      <div class="novelty-tag novelty-methodological">Methodologically novel</div>
-      <div class="before-after">
-        <div><span class="ba-label">Before</span><p>Medical LLMs were tuned on static QA benchmarks (e.g. USMLE-style), which don&#x27;t test the live, multi-turn skill of taking a history through conversation.</p></div>
-        <div><span class="ba-label">After</span><p>A self-play simulated-clinic training loop + a multi-axis clinical eval, with a blinded head-to-head against real PCPs showing the system can lead on diagnosis and communication in a text OSCE.</p></div>
-      </div>
-    
-    </section>
-    
-
-    <section class="card">
-      
-      <h2>Methods — what they actually did</h2>
-      <ul>
-<li><strong>Base</strong>: an LLM further tuned for diagnostic dialogue.</li>
-<li><strong>Self-play loop</strong>: a simulated environment where the model role-plays patient and doctor; an automated critic scores exchanges and feeds back, letting training scale across diseases/specialties without proportional real data.</li>
-<li><strong>Inference</strong>: a chain-of-reasoning strategy to structure history-taking and differential diagnosis over turns.</li>
-<li><strong>Evaluation</strong>: randomized, double-blind crossover OSCE; 149 scenarios (Canada/UK/India); 20 PCPs as baseline; validated patient-actors; rated by specialists and the actors on 30+ clinically meaningful axes.</li>
-</ul>
-    </section>
-    
-
-    <section class="card">
-      
-      <h2>Results — and what they support</h2>
-      
-          <div class="result-row">
-            <p class="claim">AMIE led on diagnostic accuracy vs PCPs.</p>
-            <p class="evidence"><span class="r-label">Evidence</span> Top differential diagnosis accuracy higher under specialist rating.</p>
-            <p class="caveat"><span class="r-label">Caveat</span> Text-chat only; PCPs may underperform vs their normal in-person workflow.</p>
-          </div>
-        
-          <div class="result-row">
-            <p class="claim">AMIE rated higher on 28 of 32 axes by specialists.</p>
-            <p class="evidence"><span class="r-label">Evidence</span> Blinded specialist scoring across history-taking, management, communication, empathy.</p>
-            <p class="caveat"><span class="r-label">Caveat</span> Axes are correlated; &#x27;28 of 32&#x27; is not 28 independent wins.</p>
-          </div>
-        
-          <div class="result-row">
-            <p class="claim">AMIE rated higher on 24 of 26 axes by patient-actors.</p>
-            <p class="evidence"><span class="r-label">Evidence</span> Patient-actor post-consult ratings.</p>
-            <p class="caveat"><span class="r-label">Caveat</span> Actors, not real patients; novelty/verbosity of an AI may inflate perceived empathy.</p>
-          </div>
-        
-    </section>
-    
-
-    <section class="card">
-      
-      <h2>Limitations</h2>
-      <div class="lim-block"><h3>Stated by authors</h3><ul><li>Text-only chat, not multimodal or real clinical setting.</li><li>Patient-actors and OSCE scenarios, not real patients.</li><li>Not a deployment-ready or regulated system.</li></ul></div><div class="lim-block lim-unstated"><h3>Unstated</h3><ul><li>PCPs were constrained to an unfamiliar text interface — the human baseline may be artificially weak.</li><li>No real safety/harm outcome measured; &#x27;preferred on chat&#x27; ≠ &#x27;safe to act on.&#x27;</li><li>Self-play critic defines &#x27;good&#x27; — risk of optimizing to the grader rather than to real clinical correctness.</li><li>Geographic/scenario coverage is curated; tail and rare presentations untested.</li><li>Empathy ratings can reward fluent verbosity, which an LLM produces by default.</li></ul></div>
-    </section>
-    
-
-    <section class="card">
-      
-      <h2>Could you actually use this?</h2>
-      <div class="feasibility feas-research-project">Effort: research project</div><h3>What you'd need</h3><ul><li>Frontier LLM access + heavy tuning compute</li><li>A simulated-patient environment and an automated clinical critic</li><li>Clinically validated eval scenarios and rater panels (expensive, slow)</li><li>Regulatory/ethics pathway for anything beyond research</li></ul><h3>Cheapest validation</h3><p>Reproduce just the self-play loop on one specialty with an open LLM and a simple rubric critic; measure whether simulated history-taking quality improves over turns before touching any human eval.</p>
-    </section>
-    
-
-    <section class="card">
-      
-      <h2>So what?</h2>
-      <div class="imp-grid"><div class="imp-block"><h3>For research</h3><ul><li>Self-play for dialogue skills (not just games/math) is viable — expect it applied to other expert-conversation domains.</li><li>Pushes eval away from static QA toward multi-turn, multi-axis clinical assessment.</li></ul></div><div class="imp-block"><h3>For practice</h3><ul><li>Don&#x27;t read this as &#x27;AI beats doctors&#x27; — read it as &#x27;structured AI history-taking is now strong enough to prototype triage/intake tools&#x27; under heavy human oversight.</li><li>The constrained-interface caveat matters: any product comparison must match the human&#x27;s real workflow, not a chat box.</li></ul></div></div>
-    </section>
-    
-
-    <section class="card">
-      
-      <h2>Knowledge graph</h2>
-      
-        <p class="graph-help">Drag to pan, scroll to zoom, click a node to highlight its connections.</p>
-        <div id="kg" class="kg-container"></div>
-        <script id="graph-data" type="application/json">{"nodes": [{"id": "amie", "label": "AMIE", "type": "technique"}, {"id": "llm", "label": "Base LLM", "type": "prior_work"}, {"id": "selfplay", "label": "Self-play simulated clinic", "type": "technique"}, {"id": "critic", "label": "Automated critic", "type": "technique"}, {"id": "osce", "label": "OSCE eval", "type": "dataset"}, {"id": "pcp", "label": "Primary care physicians", "type": "concept"}, {"id": "dx", "label": "Diagnostic accuracy", "type": "claim"}, {"id": "empathy", "label": "Communication & empathy", "type": "claim"}, {"id": "dialogue", "label": "Diagnostic dialogue", "type": "domain"}], "edges": [{"from": "amie", "to": "llm", "label": "builds_on"}, {"from": "amie", "to": "selfplay", "label": "trained_via"}, {"from": "selfplay", "to": "critic", "label": "requires"}, {"from": "amie", "to": "osce", "label": "evaluated_on"}, {"from": "amie", "to": "pcp", "label": "outperforms"}, {"from": "amie", "to": "dx", "label": "improves"}, {"from": "amie", "to": "empathy", "label": "improves"}, {"from": "amie", "to": "dialogue", "label": "targets"}]}</script>
-        
-    </section>
-    
-
-    <section class="card">
-      <div class="label">Starts from your network</div>
-      <h2>People worth reaching out to</h2>
-      <div class="people-grid">
-          <div class="person-card">
-            <h3>Vivek Natarajan</h3>
-            <p class="role">Senior/last author, Research Lead, Google DeepMind (medical AI)</p>
-            <p class="conn-path">cold: active on LinkedIn/X about medical AI</p>
-            <p class="why">Drives the Med-PaLM/AMIE line — best person on direction and what&#x27;s next.</p>
-            <span class="li-hint">Search LinkedIn for &#x27;Vivek Natarajan Google DeepMind&#x27;</span>
-          </div>
-        
-          <div class="person-card">
-            <h3>Tao Tu</h3>
-            <p class="role">First author, Google Research</p>
-            <p class="conn-path">cold: first author</p>
-            <p class="why">Knows the self-play training details and what didn&#x27;t make the paper.</p>
-            <span class="li-hint">Search LinkedIn for &#x27;Tao Tu Google Research medical AI&#x27;</span>
-          </div>
-        
-          <div class="person-card">
-            <h3>Alan Karthikesalingam</h3>
-            <p class="role">Clinician-scientist, Google DeepMind</p>
-            <p class="conn-path">cold: senior clinical author</p>
-            <p class="why">Bridges the clinical-validity and deployment-realism questions — the right skeptic on eval design.</p>
-            <span class="li-hint">Search LinkedIn for &#x27;Alan Karthikesalingam Google&#x27;</span>
-          </div>
-        
-          <div class="person-card">
-            <h3>Eric Topol</h3>
-            <p class="role">Cardiologist, Scripps; author on AI-in-medicine</p>
-            <p class="conn-path">cold: well-known commentator, reachable via X</p>
-            <p class="why">Prominent independent voice on whether &#x27;beats doctors on a benchmark&#x27; translates to care — good reality check.</p>
-            <span class="li-hint">Search &#x27;Eric Topol&#x27; (X/Substack &#x27;Ground Truths&#x27;)</span>
-          </div>
+    <section class="adaptive-section section-problem_context" aria-labelledby="section-problem_context">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">problem context</div>
+          <h2 id="section-problem_context">Why diagnostic dialogue is hard</h2>
         </div>
-    </section>
-    
-
-    <section class="card notes-card" data-slug="amie">
-      <div class="label">Your notes</div>
-      <h2>Notes</h2>
-      <p class="notes-help">
-        These persist. Served via <code>serve.py</code> they save to
-        <code>papers/amie/notes.md</code>;
-        opened as a file they save to your browser.
-        <span id="notes-status" class="notes-status"></span>
-      </p>
-      <div id="notes" class="notes-editor"
-           data-placeholder="Type your notes here… (Markdown)"></div>
-      <div class="notes-actions">
-        <button id="notes-save" type="button">Save</button>
-        <button id="notes-download" type="button">Download notes.md</button>
+        <p class="section-summary">AMIE targets the part of medicine where static exam benchmarks are weakest: asking the right follow-up questions over time.</p>
       </div>
+      <div class="section-body"><p>A diagnostic assistant is not just a search box for symptoms. It has to gather missing details, preserve patient trust, and keep a differential diagnosis alive while the conversation changes. That makes AMIE a clinical dialogue paper, not merely another medical question-answering benchmark.</p>
+<div class="visual visual-cards"><div class="visual-title">The job AMIE is trying to do</div><div class="metric-grid">
+        <div class="metric-card">
+          <div class="label">Conversation</div>
+          <strong>Multi-turn</strong>
+          <p>The model must decide what to ask next, not only answer a finished question.</p>
+        </div>
+
+        <div class="metric-card">
+          <div class="label">Clinical target</div>
+          <strong>History-taking</strong>
+          <p>The paper focuses on diagnosis through patient interviews.</p>
+        </div>
+
+        <div class="metric-card">
+          <div class="label">Evaluation caveat</div>
+          <strong>Text chat</strong>
+          <p>The test removes physical exam, tone of voice, and normal clinic workflow.</p>
+        </div>
+        </div></div>
+<div class="visual visual-comparison"><div class="visual-title">What this is not</div><div class="comparison-grid">
+        <div class="compare-card">
+          <div class="label">Static QA</div>
+          <p>Answering one medical exam question after all information is already provided.</p>
+        </div>
+
+        <div class="compare-card">
+          <div class="label">Diagnostic dialogue</div>
+          <p>Choosing questions, updating hypotheses, and explaining the plan as information arrives.</p>
+        </div>
+        </div></div></div>
     </section>
-    
-</div>
-<script>
-(function() {
-  var el = document.getElementById('graph-data');
-  var container = document.getElementById('kg');
-  if (!el || !container || typeof vis === 'undefined') return;
-  var data = JSON.parse(el.textContent);
 
-  var typeColor = {
-    technique:  { bg: '#eef2fa', bd: '#2d4a8a' },
-    dataset:    { bg: '#ecf5ef', bd: '#2e6f4a' },
-    prior_work: { bg: '#f3eee6', bd: '#7a5a2a' },
-    claim:      { bg: '#fdf3e7', bd: '#b85c00' },
-    domain:     { bg: '#f0ecf5', bd: '#5e3d8a' },
-    concept:    { bg: '#f0f0f0', bd: '#555555' }
-  };
 
-  var nodes = data.nodes.map(function(n) {
-    var c = typeColor[n.type] || typeColor.concept;
-    return {
-      id: n.id,
-      label: n.label,
-      color: { background: c.bg, border: c.bd, highlight: { background: c.bd, border: c.bd } },
-      font: { color: '#1a1a1a', size: 14, face: 'system-ui' },
-      shape: 'box',
-      margin: 10,
-      borderWidth: 1.5
-    };
-  });
+    <section class="adaptive-section section-experiment_design" aria-labelledby="section-experiment_design">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">experiment design</div>
+          <h2 id="section-experiment_design">How the evaluation was set up</h2>
+        </div>
+        <p class="section-summary">The study design is stronger than a demo, but still a simulated clinical exam rather than real-world deployment evidence.</p>
+      </div>
+      <div class="section-body"><p>The authors ran a randomized, double-blind crossover OSCE across 149 scenarios. Validated patient-actors chatted with either AMIE or one of 20 primary-care physicians, and specialist physicians plus the actors rated the encounters afterward.</p>
+<div class="visual visual-flow"><div class="visual-title">Blinded text-OSCE loop</div><div class="flow-grid">
+        <div class="flow-node">
+          <span class="step-number">1</span>
+          <strong>149 scenarios</strong>
+          <p>Cases from Canada, the UK, and India.</p>
+        </div>
 
-  var edges = data.edges.map(function(e) {
-    return {
-      from: e.from, to: e.to,
-      label: e.label,
-      arrows: 'to',
-      color: { color: '#bcb9b0', highlight: '#2d4a8a' },
-      font: { size: 11, color: '#6b6b6b', strokeWidth: 0, align: 'middle' },
-      smooth: { type: 'continuous' }
-    };
-  });
+        <div class="flow-node">
+          <span class="step-number">2</span>
+          <strong>Patient actor</strong>
+          <p>A trained actor presents the same case by chat.</p>
+        </div>
 
-  new vis.Network(container, { nodes: nodes, edges: edges }, {
-    physics: { stabilization: { iterations: 200 }, barnesHut: { springLength: 150 } },
-    interaction: { hover: true, tooltipDelay: 200 }
-  });
-})();
-</script>
-<script>
-(function() {
-  var notes = document.getElementById('notes');
-  var card = document.querySelector('.notes-card');
-  if (!notes || !card) return;
-  var slug = card.getAttribute('data-slug') || (document.title || 'paper');
-  var statusEl = document.getElementById('notes-status');
-  var saveBtn = document.getElementById('notes-save');
-  var dlBtn = document.getElementById('notes-download');
-  var lsKey = 'paper-notes:' + slug;
-  var served = location.protocol === 'http:' || location.protocol === 'https:';
+        <div class="flow-node">
+          <span class="step-number">3</span>
+          <strong>AMIE or PCP</strong>
+          <p>The responder is hidden from raters.</p>
+        </div>
 
-  function setStatus(msg) { if (statusEl) statusEl.textContent = msg; }
+        <div class="flow-node">
+          <span class="step-number">4</span>
+          <strong>Post-consult output</strong>
+          <p>History, diagnosis, management, and communication are judged.</p>
+        </div>
 
-  function load() {
-    if (served) {
-      fetch('/api/notes?slug=' + encodeURIComponent(slug))
-        .then(function(r) { return r.ok ? r.text() : ''; })
-        .then(function(text) { if (text) notes.textContent = text; })
-        .catch(function() {
-          var s = localStorage.getItem(lsKey); if (s) notes.textContent = s;
-        });
-    } else {
-      var s = localStorage.getItem(lsKey); if (s) notes.textContent = s;
-    }
-  }
+        <div class="flow-node">
+          <span class="step-number">5</span>
+          <strong>Ratings</strong>
+          <p>Specialists and patient-actors score multiple axes.</p>
+        </div>
+        </div></div>
+<div class="visual visual-cards"><div class="visual-title">Study scale</div><div class="metric-grid">
+        <div class="metric-card">
+          <div class="label">Cases</div>
+          <strong>149</strong>
+          <p>OSCE-style diagnostic scenarios.</p>
+        </div>
 
-  function save() {
-    var text = notes.textContent || '';
-    localStorage.setItem(lsKey, text);
-    if (served) {
-      setStatus('saving…');
-      fetch('/api/notes?slug=' + encodeURIComponent(slug), {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: text
-      }).then(function(r) {
-        setStatus(r.ok ? 'saved to notes.md ✓' : 'save failed (kept in browser)');
-      }).catch(function() { setStatus('offline — kept in browser'); });
-    } else {
-      setStatus('saved in browser ✓');
-    }
-  }
+        <div class="metric-card">
+          <div class="label">Human baseline</div>
+          <strong>20 PCPs</strong>
+          <p>Primary-care physicians working through text chat.</p>
+        </div>
 
-  function download() {
-    var blob = new Blob([notes.textContent || ''], { type: 'text/markdown' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'notes.md';
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
+        <div class="metric-card">
+          <div class="label">Countries</div>
+          <strong>3</strong>
+          <p>Canada, UK, and India scenario coverage.</p>
+        </div>
+        </div></div></div>
+    </section>
 
-  notes.setAttribute('contenteditable', 'true');
-  var t;
-  notes.addEventListener('input', function() {
-    setStatus('unsaved…');
-    clearTimeout(t);
-    t = setTimeout(save, 800);
-  });
-  if (saveBtn) saveBtn.addEventListener('click', save);
-  if (dlBtn) dlBtn.addEventListener('click', download);
-  load();
-})();
-</script>
+
+    <section class="adaptive-section section-method_walkthrough" aria-labelledby="section-method_walkthrough">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">method walkthrough</div>
+          <h2 id="section-method_walkthrough">How AMIE learns before seeing patients</h2>
+        </div>
+        <p class="section-summary">The key method idea is self-play: simulated patients, simulated clinicians, and an automated critic create scalable practice.</p>
+      </div>
+      <div class="section-body"><p>AMIE starts from a large language model and is tuned for diagnostic dialogue. A simulated clinic produces conversations, a critic scores them, and the model is refined toward better history-taking and diagnosis. The appeal is scale: expert conversation data is expensive, but simulated practice can be generated in large volumes.</p>
+<div class="visual visual-flow"><div class="visual-title">Self-play simulated clinic</div><div class="flow-grid">
+        <div class="flow-node">
+          <span class="step-number">1</span>
+          <strong>Create case</strong>
+          <p>A disease scenario and patient profile are sampled.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">2</span>
+          <strong>Patient model</strong>
+          <p>One model instance answers like the patient.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">3</span>
+          <strong>Clinician model</strong>
+          <p>Another instance asks questions and forms a diagnosis.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">4</span>
+          <strong>Critic</strong>
+          <p>The exchange is scored for clinical and communication quality.</p>
+        </div>
+
+        <div class="flow-node">
+          <span class="step-number">5</span>
+          <strong>Tune AMIE</strong>
+          <p>Feedback is used to improve future dialogue.</p>
+        </div>
+        </div></div>
+<div class="visual visual-matrix"><div class="visual-title">Why self-play matters</div><div class="matrix-grid" style="--matrix-cols:3"><div></div><div class="axis-label">Strength</div><div class="axis-label">Risk</div><div class="axis-label">Data</div>
+            <div class="matrix-cell tone-good">
+              <strong>Scales cheaply</strong>
+              <p>Generates many practice conversations without needing a real patient each time.</p>
+            </div>
+
+            <div class="matrix-cell tone-caution">
+              <strong>Synthetic bias</strong>
+              <p>The simulator may miss messy real patient behavior.</p>
+            </div>
+            <div class="axis-label">Behavior</div>
+            <div class="matrix-cell tone-good">
+              <strong>Optimizes dialogue</strong>
+              <p>Training targets the actual multi-turn skill.</p>
+            </div>
+
+            <div class="matrix-cell tone-caution">
+              <strong>Optimizes to critic</strong>
+              <p>The model can learn what the grader rewards instead of what clinicians value.</p>
+            </div>
+            </div></div></div>
+    </section>
+
+
+    <section class="adaptive-section section-results_interpretation" aria-labelledby="section-results_interpretation">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">results interpretation</div>
+          <h2 id="section-results_interpretation">What the headline results really say</h2>
+        </div>
+        <p class="section-summary">The results are impressive inside the study frame: AMIE leads most rated axes, but those axes do not prove autonomous clinical safety.</p>
+      </div>
+      <div class="section-body"><p>Specialist physicians preferred AMIE on 28 of 32 axes, and patient-actors preferred it on 24 of 26 axes. That supports the claim that diagnostic dialogue models can perform strongly in a text OSCE. It does not prove that AMIE is better than doctors in normal care.</p>
+<div class="visual visual-bar_chart"><div class="visual-title">Axes where AMIE led</div><div class="bar-list">
+        <div class="bar-row">
+          <div class="bar-title"><span>Specialist ratings</span><span>28</span></div>
+          <div class="bar-track"><span style="width:87.5%"></span></div>
+          <p>28 of 32 axes.</p>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-title"><span>Patient-actor ratings</span><span>24</span></div>
+          <div class="bar-track"><span style="width:92.31%"></span></div>
+          <p>24 of 26 axes.</p>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-title"><span>Real-clinic validity</span><span>2</span></div>
+          <div class="bar-track"><span style="width:20.0%"></span></div>
+          <p>Limited by text-only simulated setting.</p>
+        </div>
+        </div></div>
+<div class="visual visual-heatmap"><div class="visual-title">Evidence calibration</div><div class="heatmap-grid" style="--heat-cols:4"><div class="heat-cell heat-head">Signal</div><div class="heat-cell heat-head">Strong</div><div class="heat-cell heat-head">Moderate</div><div class="heat-cell heat-head">Weak</div><div class="heat-cell heat-row">Text OSCE performance</div><div class="heat-cell heat-win">High signal</div><div class="heat-cell heat-win">Some scenario dependence</div><div class="heat-cell heat-win"></div><div class="heat-cell heat-row">Communication ratings</div><div class="heat-cell heat-win">Clear preference</div><div class="heat-cell heat-win">May reward verbosity</div><div class="heat-cell heat-win"></div><div class="heat-cell heat-row">Deployment readiness</div><div class="heat-cell heat-win"></div><div class="heat-cell heat-win">Research direction</div><div class="heat-cell heat-win">No real patient outcomes</div></div></div></div>
+    </section>
+
+
+    <section class="adaptive-section section-limitations_and_caveats" aria-labelledby="section-limitations_and_caveats">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">limitations and caveats</div>
+          <h2 id="section-limitations_and_caveats">Where the claim can break</h2>
+        </div>
+        <p class="section-summary">The biggest caveat is not whether AMIE can chat well; it is whether chat-OSCE success transfers to safe clinical work.</p>
+      </div>
+      <div class="section-body"><p>The stated limitations are important, and several unstated ones are product-critical. The human physicians were constrained to a chat interface, the patients were actors, and no real harm or downstream care outcome was measured.</p>
+<ul><li>Text-only chat, not multimodal or real clinical setting.</li><li>Patient-actors and OSCE scenarios, not real patients.</li><li>Not a deployment-ready or regulated system.</li><li>PCPs were constrained to an unfamiliar text interface — the human baseline may be artificially weak.</li><li>No real safety/harm outcome measured; &#x27;preferred on chat&#x27; ≠ &#x27;safe to act on.&#x27;</li><li>Self-play critic defines &#x27;good&#x27; — risk of optimizing to the grader rather than to real clinical correctness.</li><li>Geographic/scenario coverage is curated; tail and rare presentations untested.</li><li>Empathy ratings can reward fluent verbosity, which an LLM produces by default.</li></ul>
+<div class="visual visual-table"><div class="visual-title">Caveat map</div><div class="table-wrap"><table><thead><tr><th>Caveat</th><th>Why it matters</th></tr></thead><tbody><tr><td>Text-only interface</td><td>May penalize clinicians who normally rely on physical exam, tone, and workflow context.</td></tr><tr><td>Patient actors</td><td>Useful standardization, but not the same as anxious, complex, real patients.</td></tr><tr><td>No deployment outcomes</td><td>Ratings do not measure harm, follow-through, liability, or longitudinal safety.</td></tr></tbody></table></div></div></div>
+    </section>
+
+
+    <section class="adaptive-section section-real_world_implications" aria-labelledby="section-real_world_implications">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">real world implications</div>
+          <h2 id="section-real_world_implications">What this changes in the real world</h2>
+        </div>
+        <p class="section-summary">The near-term opportunity is supervised intake and triage research, not autonomous diagnosis.</p>
+      </div>
+      <div class="section-body"><p>A practical team should treat AMIE as evidence that structured AI history-taking is now worth prototyping under physician oversight. The strongest use cases are front-door intake, pre-visit summarization, differential-diagnosis support, and training simulation.</p>
+<div class="visual visual-funnel"><div class="visual-title">Path from paper to product</div><div class="funnel-list">
+        <div class="funnel-step">
+          <strong>Simulated OSCE win</strong>
+          <p>Supported by this paper.</p>
+          <span class="status status-supported">supported</span>
+        </div>
+
+        <div class="funnel-step">
+          <strong>Clinician-supervised pilot</strong>
+          <p>Needs local validation and workflow fit.</p>
+          <span class="status status-caution">caution</span>
+        </div>
+
+        <div class="funnel-step">
+          <strong>Real patient outcomes</strong>
+          <p>Not measured here.</p>
+          <span class="status status-gap">gap</span>
+        </div>
+
+        <div class="funnel-step">
+          <strong>Regulated deployment</strong>
+          <p>Requires safety, liability, monitoring, and governance.</p>
+          <span class="status status-gap">gap</span>
+        </div>
+        </div></div>
+<div class="visual visual-matrix"><div class="visual-title">Best-fit applications</div><div class="matrix-grid" style="--matrix-cols:3"><div></div><div class="axis-label">Lower risk</div><div class="axis-label">Higher risk</div><div class="axis-label">Clinical value</div>
+            <div class="matrix-cell tone-good">
+              <strong>Pre-visit history</strong>
+              <p>High value, physician reviews before action.</p>
+            </div>
+
+            <div class="matrix-cell tone-bad">
+              <strong>Autonomous diagnosis</strong>
+              <p>High value but not supported by this evidence.</p>
+            </div>
+            <div class="axis-label">Operational complexity</div>
+            <div class="matrix-cell tone-good">
+              <strong>Training simulator</strong>
+              <p>Useful and controllable.</p>
+            </div>
+
+            <div class="matrix-cell tone-caution">
+              <strong>Triage routing</strong>
+              <p>Promising but needs safety thresholds.</p>
+            </div>
+            </div></div></div>
+    </section>
+
+
+    <section class="adaptive-section section-business_or_product_insight" aria-labelledby="section-business_or_product_insight">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">business or product insight</div>
+          <h2 id="section-business_or_product_insight">Product insight for builders</h2>
+        </div>
+        <p class="section-summary">The viable product wedge is workflow augmentation with a clinician in the loop, not a stand-alone doctor chatbot.</p>
+      </div>
+      <div class="section-body"><p>A business built on this research should sell time saved, better intake quality, and more complete patient histories. The defensibility is less the base model and more validated workflows, specialty-specific evaluation, safety monitoring, and integration with clinical systems.</p>
+<div class="visual visual-table"><div class="visual-title">Builder checklist</div><div class="table-wrap"><table><thead><tr><th>Question</th><th>Why it matters</th></tr></thead><tbody><tr><td>Can clinicians edit and override every output?</td><td>Oversight is the difference between assistant and unsafe automation.</td></tr><tr><td>Does it improve real workflow time?</td><td>A better chat score is not enough for adoption.</td></tr><tr><td>Can you measure missed red flags?</td><td>Safety monitoring must be productized from day one.</td></tr><tr><td>What specialty comes first?</td><td>Narrow scope makes validation and sales more credible.</td></tr></tbody></table></div></div></div>
+    </section>
+
+
+    <section class="adaptive-section section-learning_path" aria-labelledby="section-learning_path">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">learning path</div>
+          <h2 id="section-learning_path">Three papers to read next</h2>
+        </div>
+        <p class="section-summary">Read these to understand the medical LLM line that surrounds AMIE.</p>
+      </div>
+      <div class="section-body"><div class="learning-grid">
+        <article class="learning-card">
+          <span class="read-number">1</span>
+          <h3><a href="https://arxiv.org/abs/2212.13138" target="_blank" rel="noreferrer">Large Language Models Encode Clinical Knowledge</a></h3>
+          <p>Introduces Med-PaLM and the static medical QA foundation behind this research line.</p>
+          <p class="why-read"><strong>Read for:</strong> Medical LLM evaluation before conversational testing.</p>
+        </article>
+
+        <article class="learning-card">
+          <span class="read-number">2</span>
+          <h3><a href="https://arxiv.org/abs/2305.09617" target="_blank" rel="noreferrer">Towards Expert-Level Medical Question Answering with Large Language Models</a></h3>
+          <p>Shows how stronger medical LLMs were aligned and evaluated before AMIE moved into dialogue.</p>
+          <p class="why-read"><strong>Read for:</strong> Alignment and medical benchmark methodology.</p>
+        </article>
+
+        <article class="learning-card">
+          <span class="read-number">3</span>
+          <h3><a href="https://arxiv.org/abs/2505.04653" target="_blank" rel="noreferrer">Multimodal Medical AI Reasoning with Physician Oversight</a></h3>
+          <p>Useful follow-on context for moving beyond text-only dialogue toward real clinical inputs.</p>
+          <p class="why-read"><strong>Read for:</strong> Why multimodal evidence and oversight matter after AMIE.</p>
+        </article>
+        </div></div>
+    </section>
+
+
+    <section class="adaptive-section section-quiz" aria-labelledby="section-quiz">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">quiz</div>
+          <h2 id="section-quiz">Check your understanding</h2>
+        </div>
+        <p class="section-summary">Five questions that test paper comprehension, field context, and product judgment.</p>
+      </div>
+      <div class="section-body"><div class="quiz-grid">
+        <article class="quiz-card">
+          <div class="quiz-topic">
+            <span>Paper comprehension</span>
+            <div class="label">Question 1</div>
+          </div>
+          <div>
+            <h3>What is the central training idea behind AMIE?</h3>
+            <ol class="choices" type="A"><li>Self-play simulated clinical dialogue</li><li>A larger static exam database</li><li>Manual rule-based triage trees</li><li>Direct deployment feedback from hospitals</li></ol>
+            <details class="answer">
+              <summary>Show answer</summary>
+              <p><strong>Correct:</strong> Self-play simulated clinical dialogue</p>
+              <p>AMIE practices in simulated doctor-patient conversations and learns from critique.</p>
+            </details>
+          </div>
+        </article>
+
+        <article class="quiz-card">
+          <div class="quiz-topic">
+            <span>Field understanding</span>
+            <div class="label">Question 2</div>
+          </div>
+          <div>
+            <h3>Why is an OSCE different from a static medical QA benchmark?</h3>
+            <ol class="choices" type="A"><li>It tests multi-turn clinical interaction</li><li>It only tests memorized facts</li><li>It avoids patient scenarios</li><li>It removes human raters</li></ol>
+            <details class="answer">
+              <summary>Show answer</summary>
+              <p><strong>Correct:</strong> It tests multi-turn clinical interaction</p>
+              <p>An OSCE role-plays a clinical encounter, so the model must ask and respond over time.</p>
+            </details>
+          </div>
+        </article>
+
+        <article class="quiz-card">
+          <div class="quiz-topic">
+            <span>Business insight</span>
+            <div class="label">Question 3</div>
+          </div>
+          <div>
+            <h3>Which first business wedge best matches this evidence?</h3>
+            <ol class="choices" type="A"><li>Clinician-reviewed intake assistant</li><li>Fully autonomous diagnosis app</li><li>Consumer symptom influencer content</li><li>Unsupervised prescription engine</li></ol>
+            <details class="answer">
+              <summary>Show answer</summary>
+              <p><strong>Correct:</strong> Clinician-reviewed intake assistant</p>
+              <p>The study supports strong history-taking in chat, but not autonomous real-world decisions.</p>
+            </details>
+          </div>
+        </article>
+
+        <article class="quiz-card">
+          <div class="quiz-topic">
+            <span>Product insight</span>
+            <div class="label">Question 4</div>
+          </div>
+          <div>
+            <h3>What must be validated before clinical deployment?</h3>
+            <ol class="choices" type="A"><li>Real workflow safety and outcomes</li><li>Only whether users like the interface</li><li>Whether the model can write longer answers</li><li>Whether it wins every OSCE axis</li></ol>
+            <details class="answer">
+              <summary>Show answer</summary>
+              <p><strong>Correct:</strong> Real workflow safety and outcomes</p>
+              <p>Deployment depends on harm reduction, oversight, escalation, and clinical outcomes, not just ratings.</p>
+            </details>
+          </div>
+        </article>
+
+        <article class="quiz-card">
+          <div class="quiz-topic">
+            <span>Research trivia</span>
+            <div class="label">Question 5</div>
+          </div>
+          <div>
+            <h3>What does PCP stand for in this paper?</h3>
+            <ol class="choices" type="A"><li>Primary Care Physician</li><li>Patient Chat Protocol</li><li>Predictive Clinical Pipeline</li><li>Public Care Platform</li></ol>
+            <details class="answer">
+              <summary>Show answer</summary>
+              <p><strong>Correct:</strong> Primary Care Physician</p>
+              <p>The human baseline was a group of primary-care physicians.</p>
+            </details>
+          </div>
+        </article>
+        </div></div>
+    </section>
+
+<footer class="footer">
+  Generated from structured analysis as a static visual briefing.
+</footer>
+</main>
 </body>
 </html>

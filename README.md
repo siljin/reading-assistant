@@ -1,160 +1,147 @@
 # Reading Assistant
 
-An **agentic paper-reading assistant**. Hand it a paper (arXiv link, PDF, or DOI) and it produces a self-contained HTML briefing that a newcomer can actually follow — an explain-it-simply analogy, a jargon decoder, plain-language figures, optional **interactive demos**, an interactive knowledge graph, a skeptical "is this load-bearing" analysis, **persistent notes**, and a list of **people to reach out to that starts from your own network**.
+An **agentic paper-reading assistant**. Hand it a paper (arXiv link, PDF, DOI, or uploaded source) and it produces a self-contained, visual HTML briefing that adapts to that paper instead of forcing every paper into the same template.
 
-Everything for a paper lives in the repo under `papers/<slug>/`, so reports and notes travel with it and are diffable in git. This is the foundation of an end-to-end app; the analysis brain ships today as a Claude Code / Claude.ai **skill**.
+The core pipeline is:
+
+```text
+paper -> analysis.json -> adaptive report_plan -> renderer -> report.html
+```
+
+Everything for a paper lives in the repo under `papers/<slug>/`, so the source pointer, structured analysis, and generated artifact are easy to review and diff.
 
 ---
 
 ## What you get per paper
 
-```
+```text
 papers/<slug>/
-  paper.pdf          the source PDF (optional; gitignored by default)
-  source.md          pasted text / link / where the source lives
-  analysis.json      the structured analysis the agent produces
-  report.html        the self-contained briefing (open in any browser)
-  notes.md           your notes — persist here, committed with the repo
+  paper.pdf          optional source PDF, gitignored by default
+  source.md          pasted text, source link, DOI, or extraction notes
+  analysis.json      canonical structured analysis, including report_plan
+  report.html        generated self-contained briefing
 ```
 
-The `report.html` is fully self-contained: inlined CSS, knowledge graph via a CDN, demos sandboxed in iframes. Open it directly, or through the local server to get note-saving to disk.
+The `report.html` is static and self-contained: inline CSS, no personal-data APIs, and no runtime database. Open it directly in a browser.
 
 ---
 
 ## Requirements
 
-- **Python 3.10+** — that's it. The scripts use only the standard library.
-- A browser. (The knowledge graph loads `vis-network` from a CDN, so first view of the graph wants internet; everything else works offline.)
-- Claude Code or Claude.ai if you want the agent to do the reading/analysis for you.
+- Python 3.10+
+- A browser
+- Codex/Claude or another agent if you want paper acquisition and analysis filled in for you
 
-No `pip install` needed.
+No `pip install` is required for the included scripts.
 
 ---
 
-## Quick start (agent-driven — the normal path)
+## Quick Start
 
-1. Install the skill (see **Install the skill** below), or open this repo in Claude Code where the skill is already present.
-2. Say: *"Read this paper: https://arxiv.org/abs/1706.03762"* (or attach a PDF).
-3. The agent scaffolds `papers/<slug>/`, reads the paper, writes `analysis.json`, renders `report.html`, and tells you the headline finding + where to open it.
-4. View it with notes that save to disk:
-   ```bash
-   python paper-reading-assistant/scripts/serve.py
-   # open http://localhost:8000/papers/<slug>/report.html
-   ```
+Agent-driven:
 
-## Quick start (manual — drive the scripts yourself)
+1. Ask the assistant to read a paper, for example: `Read this paper: https://arxiv.org/abs/1706.03762`.
+2. The assistant scaffolds `papers/<slug>/`, reads the paper, writes `analysis.json`, renders `report.html`, and tells you where to open it.
+3. Open `papers/<slug>/report.html` directly in your browser.
+
+Manual:
 
 ```bash
-# 1. scaffold a folder
 python paper-reading-assistant/scripts/new_paper.py --title "Attention Is All You Need"
 
-# 2. copy papers/<slug>/analysis.template.json -> analysis.json and fill it in
-#    (schema is documented at the top of render_report.py)
+# Fill papers/<slug>/analysis.json.
+# The report_plan controls the adaptive section order.
 
-# 3. render
 python paper-reading-assistant/scripts/render_report.py \
-    --input papers/attention-is-all-you-need/analysis.json \
-    --output papers/attention-is-all-you-need/report.html \
-    --slug attention-is-all-you-need
-
-# 4. serve + open (notes now save to papers/<slug>/notes.md)
-python paper-reading-assistant/scripts/serve.py
+  --input papers/<slug>/analysis.json \
+  --output papers/<slug>/report.html \
+  --slug <slug>
 ```
 
 ---
 
-## Notes that persist
+## Adaptive Reports
 
-The report has a Notes editor at the bottom. How it saves depends on how you open it:
+`analysis.json` is the canonical source. Its `report_plan` tells the renderer what shape best fits the paper:
 
-- **Through `serve.py`** (`http://localhost:8000/...`) — notes save to `papers/<slug>/notes.md` on disk. Commit it and your notes travel with the repo and are diffable.
-- **Opened as a file** (`file://...`) — notes save to your browser's localStorage, and a **Download notes.md** button lets you drop them into the folder manually.
+- `paper_archetype`: method, benchmark, dataset, theory, survey, systems, clinical, product/deployment, etc.
+- `reader_goal`: learn the field, decide usefulness, reproduce the method, evaluate product potential, etc.
+- `narrative_arc`: the ordered story for this specific paper.
+- `sections[]`: typed blocks with title, takeaway, content, caveats, and optional visuals.
 
-Either way the **Download notes.md** button always works.
+The renderer keeps a consistent visual shell, but the paper decides the body. A method paper can emphasize architecture and ablations. A benchmark paper can emphasize task setup and comparisons. A dataset paper can emphasize collection, coverage, bias, and use cases. A theory paper can emphasize assumptions, claims, intuition, and open questions.
+
+Supported section types include:
+
+```text
+problem_context
+core_contribution
+method_walkthrough
+architecture_or_pipeline
+experiment_design
+results_interpretation
+limitations_and_caveats
+real_world_implications
+business_or_product_insight
+learning_path
+quiz
+```
+
+Supported visual primitives include cards, tables, flow diagrams, charts, matrices, timelines, comparison blocks, learning paths, and MCQs. Use visuals when they explain the section better than prose.
 
 ---
 
-## Connect your network (people to reach out to)
+## Skill Source
 
-The assistant doesn't just cite the authors. It **starts from people you already know** and spreads outward to the best-fit contact for the paper.
+The agent workflow lives at `paper-reading-assistant/`:
 
-1. Export your connections from LinkedIn:
-   **LinkedIn → Settings → Data privacy → Get a copy of your data → "Connections" → Request archive.**
-2. Save the file as `data/connections.csv`. This path is **gitignored** — your contacts stay on your machine and never get committed.
-   See `data/connections.example.csv` for the exact shape (LinkedIn prepends a few notes lines, then a header: `First Name,Last Name,URL,Email Address,Company,Position,Connected On`).
-3. That's it. When analyzing a paper the agent runs `find_people.py` to rank your connections by fit, then web-searches outward (2nd degree), then adds authors/experts as cold options — warm contacts first.
-
-You can also run the ranker directly:
-```bash
-python paper-reading-assistant/scripts/find_people.py \
-    --keywords "diffusion,image generation" \
-    --affiliations "MIT,Google DeepMind" --top 8
-```
-
-> Privacy: `connections.csv` is personal data. It is read locally only, never committed (gitignored), and names surface only as private outreach suggestions to you — never published into a shared artifact.
-
----
-
-## The skill
-
-The analysis brain is a skill whose source lives, unzipped and editable, at
-`paper-reading-assistant/`:
-
-```
+```text
 paper-reading-assistant/
-  SKILL.md                       the workflow the agent follows
-  references/analysis-rubric.md  how to do the analysis well
+  SKILL.md                       workflow for paper-to-report generation
+  references/analysis-rubric.md  analysis and report-plan guidance
   scripts/
     new_paper.py        scaffold papers/<slug>/
-    render_report.py    analysis.json -> self-contained report.html
-    find_people.py      rank your LinkedIn connections by topic fit
-    serve.py            local server: serves reports + saves notes to disk
-    build_skill.sh      repackage the folder into paper-reading-assistant.skill
+    render_report.py    analysis.json -> report.html
 ```
-
-### Install the skill
-
-- **Claude.ai / Claude Code (upload):** upload `paper-reading-assistant.skill` (the zip in the repo root). Rebuild it after edits with:
-  ```bash
-  bash paper-reading-assistant/scripts/build_skill.sh
-  ```
-- **Claude Code (local):** point your skills directory at `paper-reading-assistant/`, or just open this repo — the agent can read `SKILL.md` directly.
 
 ---
 
-## How it works (pipeline)
+## Pipeline
 
-```
-paper (URL/PDF)
-   │  acquire + extract            (agent)
+```text
+paper URL/PDF/text
+   │
    ▼
-analysis.json  ──────────────┐
-   │  render_report.py        │ find_people.py ← data/connections.csv (local)
-   ▼                          ▼
-report.html  ◄── people, knowledge graph, demos, notes editor
-   │  serve.py
+source.md + extracted facts
+   │
    ▼
-browser  ──► notes ──► papers/<slug>/notes.md  (committed with repo)
+analysis.json
+   ├─ bibliographic metadata
+   ├─ explanation + skeptical analysis
+   └─ report_plan.sections[]
+        │
+        ▼
+render_report.py
+        │
+        ▼
+report.html
 ```
 
 ---
 
-## Roadmap (this is the beginning)
+## Roadmap
 
-This repo is built to grow into a full end-to-end app. Natural next steps:
+- Library/index UI over `papers/`
+- Cross-paper search over `analysis.json`
+- Reusable ingestion for reading queues
+- More visual primitives and richer browser verification
+- Optional PDF extraction helpers
 
-- A library/index UI over `papers/` (the server already exposes a basic index at `/`).
-- Cross-paper knowledge graph (merge per-paper graphs).
-- Auto-ingest from a reading queue (RSS / arXiv alerts).
-- Embeddings + search across all analyses and notes.
-- Richer 2nd-degree network inference.
-
-Contributions should keep the core invariant: **one folder per paper, everything self-contained, the rendered HTML produced only by `render_report.py`.**
+The invariant: one folder per paper, `analysis.json` as the canonical source, and `report.html` generated by `render_report.py`.
 
 ---
 
-## Privacy & safety
+## Privacy & Safety
 
-- `data/connections.csv` and `papers/*/paper.pdf` are gitignored by default. Review `.gitignore` before committing.
-- The assistant names paper authors (public, professional capacity) freely. It treats your private connections as local-only outreach hints.
-- Demos run in sandboxed iframes (`allow-scripts` only) so embedded JS can't touch the rest of the page or your notes.
+- `papers/*/paper.pdf` is gitignored by default because papers can be large or copyrighted.
+- Generated reports are static HTML artifacts with no personal notes or outreach workflow.

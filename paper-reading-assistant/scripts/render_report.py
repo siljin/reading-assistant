@@ -563,8 +563,9 @@ def render_heatmap_visual(visual: dict) -> str:
         for value in row.get("cells", []):
             tone = "heat-caution" if str(value).lower() in {"high", "medium", "untested", "gap"} else "heat-win"
             cells.append(f'<div class="heat-cell {tone}">{esc(value)}</div>')
-    style = f"--heat-cols:{len(columns) + 1}"
-    return f'{visual_title(visual)}<div class="heatmap-grid" style="{style}">{"".join(cells)}</div>'
+    column_count = len(columns) + 1
+    style = f"--heat-cols:{column_count};--heat-min-width:{column_count * 118}px"
+    return f'{visual_title(visual)}<div class="heatmap-scroll"><div class="heatmap-grid" style="{style}">{"".join(cells)}</div></div>'
 
 
 def render_funnel_visual(visual: dict) -> str:
@@ -605,8 +606,9 @@ def render_matrix_visual(visual: dict) -> str:
               {f'<p>{esc(cell.get("caption"))}</p>' if cell.get("caption") else ''}
             </div>
             """)
-    style = f"--matrix-cols:{len(columns) + 1}"
-    return f'{visual_title(visual)}<div class="matrix-grid" style="{style}">{"".join(html_cells)}</div>'
+    column_count = len(columns) + 1
+    style = f"--matrix-cols:{column_count};--matrix-min-width:{column_count * 150}px"
+    return f'{visual_title(visual)}<div class="matrix-scroll"><div class="matrix-grid" style="{style}">{"".join(html_cells)}</div></div>'
 
 
 def render_timeline_visual(visual: dict) -> str:
@@ -1373,9 +1375,15 @@ h1 {
   font-weight: 900;
 }
 .flow-node strong { display: block; margin-top: 10px; }
+.heatmap-scroll, .matrix-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
 .heatmap-grid {
   display: grid;
   grid-template-columns: repeat(var(--heat-cols), minmax(120px, 1fr));
+  min-width: var(--heat-min-width, 100%);
   gap: 6px;
 }
 .heat-cell {
@@ -1385,6 +1393,7 @@ h1 {
   border-radius: 8px;
   background: #fbfcfa;
   font-size: 13px;
+  overflow-wrap: anywhere;
 }
 .heat-head { background: var(--ink); color: #fff; font-weight: 900; text-align: center; }
 .heat-row { font-weight: 900; }
@@ -1418,6 +1427,7 @@ h1 {
 .matrix-grid {
   display: grid;
   grid-template-columns: repeat(var(--matrix-cols), minmax(130px, 1fr));
+  min-width: var(--matrix-min-width, 100%);
   gap: 8px;
 }
 .axis-label {
@@ -1428,6 +1438,7 @@ h1 {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
 }
 .matrix-cell {
   min-height: 118px;
@@ -1435,6 +1446,7 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfcfa;
+  overflow-wrap: anywhere;
 }
 .matrix-cell strong { display: block; margin-bottom: 6px; }
 .matrix-cell p { margin: 0; color: var(--muted); font-size: 13px; }
@@ -1535,9 +1547,6 @@ th { background: var(--ink); color: #fff; }
 .footer { padding: 32px 0 56px; color: var(--muted); font-size: 14px; }
 @media (max-width: 900px) {
   .hero, .section-head { grid-template-columns: 1fr; }
-  .heatmap-grid, .matrix-grid { grid-template-columns: 1fr; }
-  .heat-head { text-align: left; }
-  .axis-label { place-items: start; }
 }
 @media (max-width: 640px) {
   .page { width: min(100% - 22px, 1180px); }

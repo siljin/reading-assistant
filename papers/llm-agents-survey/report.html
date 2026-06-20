@@ -262,9 +262,15 @@ h1 {
   font-weight: 900;
 }
 .flow-node strong { display: block; margin-top: 10px; }
+.heatmap-scroll, .matrix-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
 .heatmap-grid {
   display: grid;
   grid-template-columns: repeat(var(--heat-cols), minmax(120px, 1fr));
+  min-width: var(--heat-min-width, 100%);
   gap: 6px;
 }
 .heat-cell {
@@ -274,6 +280,7 @@ h1 {
   border-radius: 8px;
   background: #fbfcfa;
   font-size: 13px;
+  overflow-wrap: anywhere;
 }
 .heat-head { background: var(--ink); color: #fff; font-weight: 900; text-align: center; }
 .heat-row { font-weight: 900; }
@@ -307,6 +314,7 @@ h1 {
 .matrix-grid {
   display: grid;
   grid-template-columns: repeat(var(--matrix-cols), minmax(130px, 1fr));
+  min-width: var(--matrix-min-width, 100%);
   gap: 8px;
 }
 .axis-label {
@@ -317,6 +325,7 @@ h1 {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
 }
 .matrix-cell {
   min-height: 118px;
@@ -324,6 +333,7 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfcfa;
+  overflow-wrap: anywhere;
 }
 .matrix-cell strong { display: block; margin-bottom: 6px; }
 .matrix-cell p { margin: 0; color: var(--muted); font-size: 13px; }
@@ -424,9 +434,6 @@ th { background: var(--ink); color: #fff; }
 .footer { padding: 32px 0 56px; color: var(--muted); font-size: 14px; }
 @media (max-width: 900px) {
   .hero, .section-head { grid-template-columns: 1fr; }
-  .heatmap-grid, .matrix-grid { grid-template-columns: 1fr; }
-  .heat-head { text-align: left; }
-  .axis-label { place-items: start; }
 }
 @media (max-width: 640px) {
   .page { width: min(100% - 22px, 1180px); }
@@ -447,7 +454,7 @@ th { background: var(--ink); color: #fff; }
       <div class="reading-progress-track" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
         <span id="reading-progress-bar"></span>
       </div>
-      <div class="section-menu-links"><a class="section-link is-active" href="#section-plain_summary" data-section-link="section-plain_summary" aria-current="true">Plain-language summary</a><a class="section-link" href="#section-problem_context" data-section-link="section-problem_context">Why AI agents, and why now?</a><a class="section-link" href="#section-core_contribution" data-section-link="section-core_contribution">What the survey actually contributes</a><a class="section-link" href="#section-insight_dashboard" data-section-link="section-insight_dashboard">Insight dashboard</a><a class="section-link" href="#section-so_what" data-section-link="section-so_what">So what</a><a class="section-link" href="#section-architecture_or_pipeline" data-section-link="section-architecture_or_pipeline">Inside the three layers: Brain, Perception, Action</a><a class="section-link" href="#section-results_interpretation" data-section-link="section-results_interpretation">What the applications actually show</a><a class="section-link" href="#section-limitations_and_caveats" data-section-link="section-limitations_and_caveats">What the paper gets wrong or doesn&#x27;t say</a><a class="section-link" href="#section-real_world_implications" data-section-link="section-real_world_implications">What this means for builders and researchers</a><a class="section-link" href="#section-learning_path" data-section-link="section-learning_path">Three papers to read next</a><a class="section-link" href="#section-quiz" data-section-link="section-quiz">Check your understanding</a></div>
+      <div class="section-menu-links"><a class="section-link is-active" href="#section-plain_summary" data-section-link="section-plain_summary" aria-current="true">Plain-language summary</a><a class="section-link" href="#section-problem_context" data-section-link="section-problem_context">Why AI agents, and why now?</a><a class="section-link" href="#section-core_contribution" data-section-link="section-core_contribution">What the survey actually contributes</a><a class="section-link" href="#section-insight_dashboard" data-section-link="section-insight_dashboard">Insight dashboard</a><a class="section-link" href="#section-so_what" data-section-link="section-so_what">So what</a><a class="section-link" href="#section-architecture_or_pipeline" data-section-link="section-architecture_or_pipeline">Inside the three layers: Brain, Perception, Action</a><a class="section-link" href="#section-results_interpretation" data-section-link="section-results_interpretation">What the applications actually show</a><a class="section-link" href="#section-limitations_and_caveats" data-section-link="section-limitations_and_caveats">What the paper gets wrong or doesn&#x27;t say</a><a class="section-link" href="#section-real_world_implications" data-section-link="section-real_world_implications">What this means for builders and researchers</a><a class="section-link" href="#section-learning_path" data-section-link="section-learning_path">Three papers to read next</a><a class="section-link" href="#section-quiz" data-section-link="section-quiz">Apply the research</a></div>
     </nav>
 
 
@@ -455,7 +462,7 @@ th { background: var(--ink); color: #fff; }
       <div>
         <div class="eyebrow">Research paper visual briefing</div>
         <h1 id="title">The Rise and Potential of Large Language Model Based Agents: A Survey</h1>
-        <p class="hero-lede">LLMs can now serve as the general-purpose brain of AI agents — perceiving the world, planning actions, using tools, and cooperating with other agents — making autonomous AI assistants believable for the first time.</p>
+        <p class="hero-lede">LLMs make general-purpose AI agents believable: they can plan, use tools, remember context, and coordinate with other agents.</p>
         <div class="hero-actions">
           <span class="pill">map the field, understand the architecture, decide where to start building or researching</span>
           <span class="pill muted-pill">arXiv preprint / 2023 / Survey</span>
@@ -479,7 +486,7 @@ th { background: var(--ink); color: #fff; }
 
     <section class="summary-panel adaptive-section section-plain_summary" id="section-plain_summary">
       <div class="label">Plain-language summary</div>
-      <p>Before LLMs, building a general AI agent meant stitching together dozens of narrow specialist models, each brittle in its own way. This 86-page survey from Fudan University maps what has changed: LLMs provide a single, flexible cognitive core that can be plugged into perception inputs (text, images, audio) and action outputs (text, tool calls, robot actuators). The authors organise the field around three architectural layers — Brain (the LLM doing reasoning, memory management, and planning), Perception (multimodal input adapters), and Action (tool use, embodied movement). They then cover applications: single-agent workflows like AutoGPT, multi-agent systems where LLMs cooperate or compete, and human-agent teams. A late chapter on &#x27;agent societies&#x27; looks at what happens when many agents coexist — emergent social norms, information propagation, even ethical risks. The survey closes with candid open problems: there is no good unified benchmark for agents, physical-world grounding remains hard, and LLM hallucinations and adversarial attacks are unresolved.</p>
+      <p>This Fudan survey explains why LLMs changed AI agents from brittle task-specific systems into plausible general assistants. Its core map is Brain (reasoning, memory, planning), Perception (text, image, audio adapters), and Action (tool calls, text output, or embodied movement). It then surveys single-agent workflows, multi-agent systems, human-agent teams, and early &#x27;agent societies.&#x27; The main verdict: tool-using knowledge agents are close to useful today, while robust evaluation, physical-world grounding, hallucination control, and safety remain unresolved.</p>
     </section>
 
 
@@ -489,10 +496,10 @@ th { background: var(--ink); color: #fff; }
           <div class="eyebrow">problem context</div>
           <h2 id="section-problem_context-title">Why AI agents, and why now?</h2>
         </div>
-        <p class="section-summary">Narrow AI systems could do one thing well. LLMs finally provide a general-purpose cognitive substrate that can be wired into sensors and actuators — making general AI agents a plausible engineering project, not just a sci-fi idea.</p>
+        <p class="section-summary">LLMs provide a flexible cognitive core that can be wired into tools, memory, sensors, and action systems.</p>
       </div>
-      <div class="section-body"><p>For decades, building an AI agent meant assembling brittle specialists: one model for vision, another for planning, another for language. Each new task required re-engineering the glue. The field kept hitting the &#x27;generalisation wall&#x27; — systems that crushed benchmarks in one domain collapsed on slightly different inputs. Large language models trained on internet-scale text changed the equation. They store vast common-sense knowledge, follow novel instructions zero-shot, and can reason through multi-step problems when prompted carefully. Researchers quickly realised: if you can get an LLM to reason about <em>what tool to call next</em>, you have the seeds of a general agent. This survey arrives at exactly that inflection point, cataloguing a field that went from a few demos to hundreds of papers in under two years.</p>
-<ul><li>Classical AI agents (symbolic, reactive, RL-based) each hit a generalisation ceiling</li><li>LLMs offer knowledge, instruction-following, and reasoning in a single model</li><li>The combination of LLM + tools + memory = first credible general-purpose agent architecture</li><li>Field grew from ~0 to hundreds of papers between 2022 and mid-2023</li></ul>
+      <div class="section-body"><p>Older agents depended on brittle specialists for vision, planning, language, and control. Each new task required new glue, and systems that worked in one domain often broke in another. LLMs changed the equation by combining broad knowledge, instruction following, and multi-step reasoning in one model. Once an LLM can decide <em>what tool to call next</em>, it becomes the center of a general agent loop. This survey captures that inflection point.</p>
+<ul><li>Symbolic, reactive, and RL agents each hit a generalisation ceiling</li><li>LLMs combine knowledge, instruction-following, and reasoning</li><li>LLM + tools + memory is the core agent architecture</li></ul>
 <div class="visual visual-timeline"><div class="visual-title">From symbolic agents to LLM agents</div><div class="timeline-list">
         <div class="timeline-item">
           <span>1950s–80s</span>
@@ -544,10 +551,10 @@ th { background: var(--ink); color: #fff; }
           <div class="eyebrow">core contribution</div>
           <h2 id="section-core_contribution-title">What the survey actually contributes</h2>
         </div>
-        <p class="section-summary">A unified Brain-Perception-Action taxonomy that organises 300+ papers into a coherent field — and a frank account of what is still missing.</p>
+        <p class="section-summary">Its value is a shared Brain-Perception-Action map for a fast-moving field, not a new algorithm.</p>
       </div>
-      <div class="section-body"><p>The paper&#x27;s primary contribution is taxonomic, not experimental. The authors read roughly 300 papers published through mid-2023 and propose a three-layer framework: Brain (the LLM core, handling memory, reasoning, and planning), Perception (adapters that convert text/image/audio into LLM-readable form), and Action (the output layer — text generation, tool calls, or embodied robot commands). They then map every major application and open problem onto this framework. This is genuinely useful because the field had no shared vocabulary — every paper invented its own architecture diagram. The secondary contribution is a curated reading list (GitHub repo) that has become a go-to entry point. What the survey does <em>not</em> do: it proposes no new technique, runs no experiment, and cannot adjudicate between competing claims in cited papers.</p>
-<ul><li>Proposes Brain-Perception-Action as the canonical three-layer framework</li><li>Organises ~300 papers into a coherent taxonomy for the first time</li><li>Surfaces the evaluation gap: no unified agent benchmark exists</li><li>Curated GitHub reading list widely used as field entry point</li></ul>
+      <div class="section-body"><p>The survey is taxonomic. The authors read roughly 300 papers through mid-2023 and group them into three layers: Brain (memory, reasoning, planning), Perception (adapters for text, image, and audio), and Action (text, tool calls, or embodied control). That shared vocabulary matters because the field had many demos but little structure. The paper also contributes a curated reading list, but it runs no experiment and cannot settle which cited systems are best.</p>
+<ul><li>Proposes Brain-Perception-Action as a three-layer framework</li><li>Organises ~300 papers into a coherent taxonomy</li><li>Surfaces the missing unified benchmark</li></ul>
 <div class="visual visual-flow"><div class="visual-title">Brain-Perception-Action architecture</div><div class="flow-grid">
         <div class="flow-node">
           <span class="step-number">1</span>
@@ -579,7 +586,7 @@ th { background: var(--ink); color: #fff; }
           <p>Feedback loop closes</p>
         </div>
         </div></div>
-<div class="caveat-box"><div class="label">Caveats</div><ul><li>Framework is the authors&#x27; own; not a community standard</li><li>No new experiments — all evidence is from cited works</li><li>Coverage skews heavily toward English-language, US/China lab papers</li></ul></div></div>
+<div class="caveat-box"><div class="label">Caveats</div><ul><li>Framework is the authors&#x27; own; not a community standard</li><li>No new experiments — all evidence is from cited works</li></ul></div></div>
     </section>
 
 
@@ -595,25 +602,25 @@ th { background: var(--ink); color: #fff; }
         <div class="metric-card">
           <div class="label">Paper type</div>
           <strong>Survey / field map</strong>
-          <p>Best used to understand the LLM-agent landscape, not to compare one new algorithm.</p>
+          <p>Use it as a field map, not an algorithm comparison.</p>
         </div>
 
         <div class="metric-card">
           <div class="label">Evidence base</div>
           <strong>~300 papers</strong>
-          <p>Qualitative taxonomy through mid-2023; no original experiments or meta-analysis.</p>
+          <p>Qualitative taxonomy through mid-2023; no new experiments.</p>
         </div>
 
         <div class="metric-card">
           <div class="label">Build now</div>
           <strong>Tool agents</strong>
-          <p>Knowledge-work agents are production-adjacent with guardrails and human review.</p>
+          <p>Knowledge-work agents are viable with guardrails and review.</p>
         </div>
 
         <div class="metric-card">
           <div class="label">Too early</div>
           <strong>Physical autonomy</strong>
-          <p>Embodied robotics is still mostly simulated or research-grade.</p>
+          <p>Embodied robotics remains research-grade.</p>
         </div>
         </div>
 <div class="adaptive-module-grid">
@@ -632,30 +639,30 @@ th { background: var(--ink); color: #fff; }
           <p>Translate the field map into build, research, and business bets.</p>
         </article>
         </div>
-<div class="visual visual-heatmap"><div class="visual-title">Field map: maturity and risk by agent area</div><div class="heatmap-grid" style="--heat-cols:5"><div class="heat-cell heat-head">Signal</div><div class="heat-cell heat-head">Research activity</div><div class="heat-cell heat-head">Prototype maturity</div><div class="heat-cell heat-head">Product readiness</div><div class="heat-cell heat-head">Risk</div><div class="heat-cell heat-row">Tool use</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-row">Memory/planning</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-row">Multi-agent</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-row">Agent society</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-row">Embodied agents</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-row">Evaluation/safety</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-caution">High</div></div></div>
+<div class="visual visual-heatmap"><div class="visual-title">Field map: maturity and risk by agent area</div><div class="heatmap-scroll"><div class="heatmap-grid" style="--heat-cols:5;--heat-min-width:590px"><div class="heat-cell heat-head">Signal</div><div class="heat-cell heat-head">Research activity</div><div class="heat-cell heat-head">Prototype maturity</div><div class="heat-cell heat-head">Product readiness</div><div class="heat-cell heat-head">Risk</div><div class="heat-cell heat-row">Tool use</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-row">Memory/planning</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-row">Multi-agent</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-row">Agent society</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-row">Embodied agents</div><div class="heat-cell heat-caution">Medium</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-row">Evaluation/safety</div><div class="heat-cell heat-caution">High</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-win">Low</div><div class="heat-cell heat-caution">High</div></div></div></div>
 <div class="visual visual-bar_chart"><div class="visual-title">Deployment readiness score</div><div class="bar-list">
         <div class="bar-row">
           <div class="bar-title"><span>Tool-using knowledge agents</span><span>8</span></div>
           <div class="bar-track"><span style="width:80.0%"></span></div>
-          <p>Useful today with supervision and deterministic tools.</p>
+          <p>Useful today with supervision.</p>
         </div>
 
         <div class="bar-row">
           <div class="bar-title"><span>Multi-agent coding workflows</span><span>6</span></div>
           <div class="bar-track"><span style="width:60.0%"></span></div>
-          <p>Promising but brittle from communication overhead and cascading errors.</p>
+          <p>Promising, but errors cascade.</p>
         </div>
 
         <div class="bar-row">
           <div class="bar-title"><span>Agent societies</span><span>3</span></div>
           <div class="bar-track"><span style="width:30.0%"></span></div>
-          <p>Research insight more than product category today.</p>
+          <p>Mostly research signal.</p>
         </div>
 
         <div class="bar-row">
           <div class="bar-title"><span>Physical embodied autonomy</span><span>2</span></div>
           <div class="bar-track"><span style="width:20.0%"></span></div>
-          <p>Minecraft-style results do not yet translate to physical robots.</p>
+          <p>Still far from robots.</p>
         </div>
         </div></div>
 <div class="visual visual-line_chart">
@@ -670,32 +677,32 @@ th { background: var(--ink); color: #fff; }
         <div class="line-point">
           <strong>Pre-2020</strong>
           <span>1</span>
-          <p>Classical and RL agents remained narrow.</p>
+          <p>Agents stayed narrow.</p>
         </div>
 
         <div class="line-point">
           <strong>2021</strong>
           <span>2</span>
-          <p>Tool and prompting patterns begin to matter.</p>
+          <p>Tool prompting emerges.</p>
         </div>
 
         <div class="line-point">
           <strong>2022</strong>
           <span>5</span>
-          <p>Instruction-tuned LLMs make general agents plausible.</p>
+          <p>Instruction-tuned LLMs unlock the pattern.</p>
         </div>
 
         <div class="line-point">
           <strong>Mid-2023</strong>
           <span>9</span>
-          <p>AutoGPT, Voyager, Toolformer, ReAct, and multi-agent systems create a crowded field.</p>
+          <p>AutoGPT, Voyager, ReAct, and multi-agent systems crowd the field.</p>
         </div>
         </div>
     </div>
 <div class="evidence-profile"><div class="visual-title">Evidence profile</div>
         <article class="claim-card">
           <h3>LLMs are a credible general-purpose brain for software and knowledge-work agents.</h3>
-          <p>Many cited systems show useful perception-reason-action loops, but reliability and evaluation remain weak.</p>
+          <p>Many systems work, but reliability and evaluation remain weak.</p>
           <div class="claim-bars">
             <div><span>Support</span><b>8/10</b><div class="bar-track"><span style="width:80.0%"></span></div></div>
             <div><span>Risk</span><b>5/10</b><div class="bar-track risk-track"><span style="width:50.0%"></span></div></div>
@@ -704,7 +711,7 @@ th { background: var(--ink); color: #fff; }
 
         <article class="claim-card">
           <h3>Multi-agent systems can outperform single-agent workflows on complex tasks.</h3>
-          <p>Evidence is strongest in coding demos and weaker for open-ended, cross-domain work.</p>
+          <p>Strongest in coding demos; weaker across domains.</p>
           <div class="claim-bars">
             <div><span>Support</span><b>6/10</b><div class="bar-track"><span style="width:60.0%"></span></div></div>
             <div><span>Risk</span><b>7/10</b><div class="bar-track risk-track"><span style="width:70.0%"></span></div></div>
@@ -713,34 +720,34 @@ th { background: var(--ink); color: #fff; }
 
         <article class="claim-card">
           <h3>Embodied LLM agents are close to real-world physical autonomy.</h3>
-          <p>Voyager-style results are impressive but mostly simulated; robotics transfer is still a hard gap.</p>
+          <p>Impressive in simulation; weak transfer to robotics.</p>
           <div class="claim-bars">
             <div><span>Support</span><b>3/10</b><div class="bar-track"><span style="width:30.0%"></span></div></div>
             <div><span>Risk</span><b>8/10</b><div class="bar-track risk-track"><span style="width:80.0%"></span></div></div>
           </div>
         </article>
         </div>
-<div class="visual visual-matrix"><div class="visual-title">Opportunity matrix: Strategic value x Feasibility today</div><div class="matrix-grid" style="--matrix-cols:3"><div></div><div class="axis-label">Lower feasibility</div><div class="axis-label">Higher feasibility</div><div class="axis-label">Higher value</div>
+<div class="visual visual-matrix"><div class="visual-title">Opportunity matrix: Strategic value x Feasibility today</div><div class="matrix-scroll"><div class="matrix-grid" style="--matrix-cols:3;--matrix-min-width:450px"><div></div><div class="axis-label">Lower feasibility</div><div class="axis-label">Higher feasibility</div><div class="axis-label">Higher value</div>
             <div class="matrix-cell tone-caution">
               <strong>Multi-agent operations teams</strong>
-              <p>High upside, but coordination and verification remain brittle.</p>
+              <p>High upside, but coordination remains brittle.</p>
             </div>
 
             <div class="matrix-cell tone-good">
               <strong>Supervised research/coding agents</strong>
-              <p>Best near-term wedge: clear tools, measurable output, human review.</p>
+              <p>Best near-term wedge: clear tools and review.</p>
             </div>
             <div class="axis-label">Lower value</div>
             <div class="matrix-cell tone-bad">
               <strong>Physical autonomous workers</strong>
-              <p>Strategically exciting, but the evidence is too simulation-heavy.</p>
+              <p>Exciting, but too simulation-heavy.</p>
             </div>
 
             <div class="matrix-cell tone-neutral">
               <strong>Generic chat wrappers</strong>
-              <p>Easy to build, hard to defend, and not the survey&#x27;s real opportunity.</p>
+              <p>Easy to build, hard to defend.</p>
             </div>
-            </div></div></div>
+            </div></div></div></div>
     </section>
 
 
@@ -755,20 +762,20 @@ th { background: var(--ink); color: #fff; }
       <div class="lens-tabs"><button type="button" data-lens-tab="research" aria-controls="lens-research" aria-selected="true">Research</button><button type="button" data-lens-tab="product" aria-controls="lens-product" aria-selected="false">Product</button><button type="button" data-lens-tab="business" aria-controls="lens-business" aria-selected="false">Business</button></div>
       <div class="lens-panels">
         <article class="lens-panel" id="lens-research" data-lens-panel="research">
-          <p class="lens-headline">The highest-leverage research problem is evaluation, not another agent demo.</p>
+          <p class="lens-headline">The highest-leverage research problem is evaluation, not another demo.</p>
                 <div class="lens-list">
                   <div class="label">Implications</div>
-                  <ul><li>The field needs shared benchmarks for utility, sociability, safety, and continual evolution.</li><li>Agent safety should be evaluated as a system property: model behavior, tool permissions, memory, and human checkpoints together.</li><li>Multi-agent communication protocols are still informal; standard protocols could become a research infrastructure layer.</li></ul>
+                  <ul><li>The field needs shared benchmarks for utility, safety, sociability, and continual evolution.</li><li>Agent safety must be evaluated across model behavior, tool permissions, memory, and human checkpoints.</li></ul>
                 </div>
 
                 <div class="lens-list">
                   <div class="label">Open Questions</div>
-                  <ul><li>How do we measure whether an autonomous agent is genuinely better than a scripted workflow?</li><li>How should benchmarks capture long-horizon failures such as loops, hidden cost, and unsafe tool calls?</li><li>Can memory systems support continual learning without accumulating stale or harmful beliefs?</li></ul>
+                  <ul><li>When is an agent better than a scripted workflow?</li><li>How should benchmarks capture loops, hidden cost, and unsafe tool calls?</li></ul>
                 </div>
 
                 <div class="lens-list">
                   <div class="label">Next Actions</div>
-                  <ul><li>Design benchmark suites that include cost, failure recovery, and safety outcomes.</li><li>Compare single-agent and multi-agent systems on the same non-coding tasks.</li><li>Study guardrail mechanisms as first-class agent architecture components.</li></ul>
+                  <ul><li>Benchmark cost, failure recovery, and safety outcomes.</li><li>Compare single-agent and multi-agent systems on the same non-coding tasks.</li></ul>
                 </div>
 
         </article>
@@ -777,41 +784,41 @@ th { background: var(--ink); color: #fff; }
           <p class="lens-headline">Build supervised tool agents now; avoid pretending full autonomy is ready.</p>
                 <div class="lens-list">
                   <div class="label">Opportunities</div>
-                  <ul><li>Research assistants, coding support, document processing, data analysis, and internal operations agents.</li><li>Domain-specific agents that use verified tools and cite evidence before taking action.</li><li>Human-in-the-loop workflows where the agent prepares work and the user approves consequential steps.</li></ul>
+                  <ul><li>Research, coding, document, data-analysis, and internal-ops assistants.</li><li>Domain agents that use verified tools and cite evidence before action.</li></ul>
                 </div>
 
                 <div class="lens-list">
                   <div class="label">Guardrails</div>
-                  <ul><li>Require evidence before tool calls that affect money, users, legal commitments, or production systems.</li><li>Constrain tools by permission, audit every action, and provide rollback paths.</li><li>Use retrieval and deterministic APIs to reduce hallucination, but do not treat them as complete safety solutions.</li></ul>
+                  <ul><li>Require approval for tool calls involving money, users, legal commitments, or production systems.</li><li>Constrain permissions, audit actions, and provide rollback paths.</li></ul>
                 </div>
 
                 <div class="lens-list">
                   <div class="label">Next Actions</div>
-                  <ul><li>Pilot one narrow internal workflow with clear success metrics and human review.</li><li>Track agent loop failures, tool-call errors, cost per completed task, and user trust.</li><li>Delay physical-world autonomy and high-liability decisions until evaluation catches up.</li></ul>
+                  <ul><li>Pilot one narrow internal workflow with clear metrics and human review.</li><li>Track loop failures, tool errors, cost per task, and user trust.</li></ul>
                 </div>
 
         </article>
 
         <article class="lens-panel" id="lens-business" data-lens-panel="business">
-          <p class="lens-headline">The business wedge is reliability-as-a-service, not generic autonomous agents.</p>
+          <p class="lens-headline">The business wedge is reliability-as-a-service, not generic autonomy.</p>
                 <div class="lens-list">
                   <div class="label">Market Openings</div>
-                  <ul><li>Agent-as-a-Service for regulated or domain-specific workflows where tool access and auditability matter.</li><li>Evaluation and observability platforms for agent behavior, cost, and safety.</li><li>Vertical products that package an agent with workflow integration, permissions, and accountability.</li></ul>
+                  <ul><li>Regulated or domain-specific agents where tool access and auditability matter.</li><li>Evaluation and observability platforms for behavior, cost, and safety.</li></ul>
                 </div>
 
                 <div class="lens-list">
                   <div class="label">Adoption Blockers</div>
-                  <ul><li>Unclear liability when an agent books, sends, buys, deploys, or advises incorrectly.</li><li>High operating cost for long-running GPT-4-class agent loops.</li><li>Lack of trusted benchmarks makes vendor claims hard to compare.</li></ul>
+                  <ul><li>Unclear liability when agents book, send, buy, deploy, or advise incorrectly.</li><li>High cost for long-running frontier-model loops.</li></ul>
                 </div>
 
                 <div class="lens-list">
                   <div class="label">Risks</div>
-                  <ul><li>A demo-first product can fail in production because agent errors compound over long tasks.</li><li>Safety failures can create reputational and legal exposure faster than a normal software bug.</li><li>Generic agent platforms may be hard to defend if domain workflow data and integrations are weak.</li></ul>
+                  <ul><li>Agent errors compound over long tasks.</li><li>Safety failures create reputational and legal exposure quickly.</li></ul>
                 </div>
 
                 <div class="lens-list">
                   <div class="label">Next Actions</div>
-                  <ul><li>Position products around accountable automation, not unrestricted autonomy.</li><li>Make audit logs, approvals, and permission boundaries visible product features.</li><li>Use the survey as a market map: tool agents first, multi-agent workflows second, embodied autonomy later.</li></ul>
+                  <ul><li>Position products around accountable automation.</li><li>Make audit logs, approvals, and permissions visible product features.</li></ul>
                 </div>
 
         </article>
@@ -825,10 +832,10 @@ th { background: var(--ink); color: #fff; }
           <div class="eyebrow">architecture or pipeline</div>
           <h2 id="section-architecture_or_pipeline-title">Inside the three layers: Brain, Perception, Action</h2>
         </div>
-        <p class="section-summary">The brain layer is where most of the interesting engineering happens — memory management, chain-of-thought planning, and tool orchestration. Perception and action are mostly solved by plugging in existing specialist models.</p>
+        <p class="section-summary">Most engineering pressure sits in the Brain layer: memory, planning, reasoning, and tool orchestration.</p>
       </div>
-      <div class="section-body"><p><strong>Brain.</strong> The LLM handles five functions: natural language interaction, knowledge retrieval (from training or external DBs), memory (short-term context window + long-term vector stores), reasoning (chain-of-thought, self-consistency, plan-and-execute), and generalisation (zero-shot, few-shot, in-context learning). The hard problems are (1) context window limits — solved by summarisation, vector retrieval, or hybrid memory stores like ChatDB — and (2) hallucination — partially mitigated by tool use and retrieval augmentation, not yet solved. <strong>Perception.</strong> Textual input is native. Visual input uses pre-trained vision encoders (ViT, CLIP) bridged to the LLM via a projection layer or Q-Former (BLIP-2 style). Audio uses audio spectrogram transformers or cascading specialist models (AudioGPT). The pattern is consistent: freeze a specialist encoder, train a lightweight bridge. <strong>Action.</strong> Three output modes: text generation (native), tool use (the LLM outputs structured calls to APIs, search engines, code interpreters — ToolFormer-style), and embodied action (the LLM generates high-level plans; a low-level policy or robot API executes them). Tool use is the most mature. Embodied action in the physical world remains research-grade.</p>
-<ul><li>Memory bottleneck: context window → solved by vector DB retrieval or summarisation</li><li>Vision bridge: freeze ViT encoder, train small projection layer to LLM space</li><li>Tool use: LLM outputs structured API call, gets result, reasons over it (ReAct pattern)</li><li>Embodied: LLM = high-level planner; low-level policy/robot API = executor</li></ul>
+      <div class="section-body"><p><strong>Brain.</strong> The LLM handles interaction, knowledge retrieval, memory, reasoning, planning, and generalisation. The hard parts are context limits and hallucination; retrieval, summaries, and structured memory help but do not solve them. <strong>Perception.</strong> Text is native. Images and audio usually pass through specialist encoders bridged into the LLM. <strong>Action.</strong> The agent can write text, call tools, or issue high-level plans to a robot or simulator. Tool use is the mature path; physical embodiment is still research-grade.</p>
+<ul><li>Memory bottleneck: context window → retrieval or summarisation</li><li>Vision bridge: specialist encoder → LLM-readable representation</li><li>Tool use: structured API call → observation → next reasoning step</li></ul>
 <div class="visual visual-cards"><div class="visual-title">Brain module capabilities</div><div class="metric-grid">
         <div class="metric-card">
           <div class="label">Natural Language</div>
@@ -867,7 +874,7 @@ th { background: var(--ink); color: #fff; }
         </div>
         </div></div>
 <div class="visual visual-comparison"><div class="visual-title">Tool use vs. embodied action maturity</div><div class="table-wrap comparison-table"><table><thead><tr><th>Aspect</th><th>Tool Use</th><th>Embodied</th></tr></thead><tbody><tr><td>Maturity</td><td>Production-ready (LangChain, AutoGen)</td><td>Research demo (Voyager, SayCan)</td></tr><tr><td>Feedback loop</td><td>Deterministic API responses</td><td>Noisy physical/simulated sensors</td></tr><tr><td>Failure mode</td><td>Wrong API call, bad parse</td><td>Physical collision, policy mismatch</td></tr><tr><td>Deployment cost</td><td>API fees only</td><td>Hardware + simulation + RL training</td></tr></tbody></table></div></div>
-<div class="caveat-box"><div class="label">Caveats</div><ul><li>Memory retrieval quality degrades with very large histories</li><li>Vision-language alignment still loses fine-grained spatial detail</li><li>Embodied physical actions are 3-5 years behind virtual-world demos</li></ul></div></div>
+<div class="caveat-box"><div class="label">Caveats</div><ul><li>Memory quality degrades with long histories</li><li>Embodied action lags virtual-world demos</li></ul></div></div>
     </section>
 
 
@@ -877,12 +884,12 @@ th { background: var(--ink); color: #fff; }
           <div class="eyebrow">results interpretation</div>
           <h2 id="section-results_interpretation-title">What the applications actually show</h2>
         </div>
-        <p class="section-summary">Single-agent tool use works well enough to automate knowledge work today. Multi-agent pipelines outperform single agents on complex tasks but add failure modes. Embodied agents work in Minecraft; physical-world robots are 5 years behind.</p>
+        <p class="section-summary">Tool agents are closest to use today; multi-agent systems add power and failure modes; embodied agents remain early.</p>
       </div>
-      <div class="section-body"><p><strong>Single-agent applications</strong> span three categories. Task-oriented (AutoGPT, web navigation, household task agents): reliable for well-defined, tool-accessible tasks; unreliable when implicit common-sense knowledge is needed. Innovation-oriented (ChemCrow for chemistry, code-generation agents): domain tools are the key enabler; agents can run real experiments via robotic APIs. Lifecycle-oriented (Voyager in Minecraft): lifelong skill accumulation works in closed simulated worlds; real-world transfer is unsolved. <strong>Multi-agent applications</strong>: cooperative systems (ChatDev, MetaGPT) decompose software projects across specialised roles and consistently beat single-agent baselines on coding benchmarks. Adversarial systems (debate-style) improve factuality and robustness. <strong>Human-agent cooperation</strong>: instructor-executor paradigm (human gives high-level goal, agent executes) and equal-partnership paradigm (human and agent co-create) both show productivity gains in early studies. <strong>Agent societies</strong>: Generative Agents (Smallville) showed 25 agents exhibit emergent social behaviours — information spread, relationship formation — without explicit programming. This is the most surprising and speculative result in the survey.</p>
-<ul><li>AutoGPT and similar single-agent systems work for research/knowledge tasks; fail on embodied common-sense</li><li>Multi-agent coding (ChatDev, MetaGPT) outperforms GPT-4-solo on software benchmarks</li><li>Voyager: skill library + iterative prompts → state-of-the-art Minecraft exploration</li><li>Generative Agents (Smallville): emergent social phenomena from 25 simple agents — most surprising result</li></ul>
+      <div class="section-body"><p><strong>Single-agent applications</strong> work best when tasks are well-defined and tool-accessible: research, coding, web navigation, and domain workflows. <strong>Multi-agent applications</strong> such as ChatDev and MetaGPT decompose work across roles and often beat single-agent baselines on coding tasks, but communication overhead creates new failure paths. <strong>Human-agent cooperation</strong> is safer when humans approve consequential actions. <strong>Agent societies</strong> such as Smallville are the most surprising result: many simple agents can produce emergent social behavior, but this is still speculative.</p>
+<ul><li>Single-agent systems work best for tool-accessible knowledge tasks</li><li>Multi-agent coding systems can beat single-agent baselines</li><li>Smallville shows emergent social behavior, but in a simplified world</li></ul>
 <div class="visual visual-table"><div class="visual-title">Application categories and deployment readiness</div><div class="table-wrap"><table><thead><tr><th>Category</th><th>Example Systems</th><th>Readiness</th><th>Key Bottleneck</th></tr></thead><tbody><tr><td>Single-agent: task</td><td>AutoGPT, WebGum</td><td>Production-adjacent</td><td>Hallucination, reliability</td></tr><tr><td>Single-agent: innovation</td><td>ChemCrow, SciAgent</td><td>Research prototype</td><td>Domain data scarcity</td></tr><tr><td>Single-agent: lifecycle</td><td>Voyager</td><td>Research demo</td><td>Simulated-to-real gap</td></tr><tr><td>Multi-agent: cooperative</td><td>ChatDev, MetaGPT</td><td>Early production</td><td>Cascading errors</td></tr><tr><td>Multi-agent: adversarial</td><td>Debate agents</td><td>Research</td><td>Convergence instability</td></tr><tr><td>Human-agent cooperation</td><td>Instructor-executor</td><td>Emerging product</td><td>Trust, verification</td></tr><tr><td>Agent societies</td><td>Generative Agents</td><td>Basic research</td><td>Evaluation methods</td></tr></tbody></table></div></div>
-<div class="caveat-box"><div class="label">Caveats</div><ul><li>Multi-agent benchmarks are almost entirely coding tasks — generalisation to other domains is assumed, not shown</li><li>Cascading errors in multi-agent pipelines are underreported</li><li>Smallville is a heavily simplified social simulation; real human society complexity is orders of magnitude higher</li></ul></div></div>
+<div class="caveat-box"><div class="label">Caveats</div><ul><li>Multi-agent benchmarks are mostly coding tasks</li><li>Cascading errors in multi-agent pipelines are underreported</li><li>Smallville is far simpler than real social behavior</li></ul></div></div>
     </section>
 
 
@@ -892,11 +899,11 @@ th { background: var(--ink); color: #fff; }
           <div class="eyebrow">limitations and caveats</div>
           <h2 id="section-limitations_and_caveats-title">What the paper gets wrong or doesn&#x27;t say</h2>
         </div>
-        <p class="section-summary">The survey is honest about technical gaps but sidesteps compute costs, real deployment failure rates, and the fact that most cited &#x27;results&#x27; are demos without rigorous evaluation.</p>
+        <p class="section-summary">The survey names big technical gaps, but underplays cost, production failure rates, and safety evidence.</p>
       </div>
-      <div class="section-body"><p><strong>Stated limitations (credit to authors):</strong> No unified benchmark, physical-world grounding unsolved, hallucination unresolved, misuse risks real and underspecified, agent scaling introduces communication overhead and emergent risks. <strong>Unstated limitations:</strong> First, compute cost is invisible. Running GPT-4 as an agent backbone for hours is expensive; the survey never discusses what production-scale agent workloads cost. Second, almost all cited results are demos or academic prototypes; real deployment failure rates (how often agents get stuck, loop, or cause harm) are not reported. Third, the Brain-Perception-Action taxonomy is the authors&#x27; own construction — it is elegant but not a field consensus, and some systems (e.g. reward-model-guided agents) do not fit neatly. Fourth, the survey was written in mid-2023; GPT-4 was the frontier model. By late 2024, Claude 3.5 Sonnet, Gemini 1.5, and open-weight models like Llama 3 have significantly shifted the capability landscape. Fifth, human evaluation of agent safety and alignment is sparse in the cited literature — &#x27;the agent completed the task&#x27; is not the same as &#x27;the agent completed it safely&#x27;.</p>
-<ul><li>Compute costs for agent workloads: completely absent from the survey</li><li>Demo ≠ deployment: failure rates, maintenance burden, adversarial resilience in production not covered</li><li>Framework is authors&#x27; taxonomy, not a community standard</li><li>Field has moved fast: written mid-2023, already dated on model capabilities by 2024</li><li>Human safety evaluation sparse in cited papers</li></ul>
-<div class="visual visual-matrix"><div class="visual-title">Limitation severity × coverage in the survey</div><div class="matrix-grid" style="--matrix-cols:3"><div></div><div class="axis-label">High</div><div class="axis-label">Medium</div><div class="axis-label">Well covered</div>
+      <div class="section-body"><p><strong>Stated limitations:</strong> no unified benchmark, weak physical grounding, hallucinations, misuse risk, and scaling problems in multi-agent systems. <strong>Unstated limitations:</strong> production cost is mostly absent, most cited systems are demos, deployment failure rates are unknown, and the taxonomy is the authors&#x27; framework rather than a field standard. The paper also reflects mid-2023 model capabilities, so some frontier-model claims have aged quickly. Most importantly, &#x27;the agent completed the task&#x27; is not the same as &#x27;the agent completed it safely.&#x27;</p>
+<ul><li>Compute cost is absent</li><li>Demo ≠ deployment: failure rates and maintenance are not covered</li><li>Framework is authors&#x27; taxonomy, not a community standard</li><li>Human safety evaluation is sparse</li></ul>
+<div class="visual visual-matrix"><div class="visual-title">Limitation severity × coverage in the survey</div><div class="matrix-scroll"><div class="matrix-grid" style="--matrix-cols:3;--matrix-min-width:450px"><div></div><div class="axis-label">High</div><div class="axis-label">Medium</div><div class="axis-label">Well covered</div>
             <div class="matrix-cell tone-neutral">
               <strong>Hallucination / Misuse risk / Evaluation gap</strong>
 
@@ -916,7 +923,7 @@ th { background: var(--ink); color: #fff; }
               <strong>Multilingual coverage / Framework consensus / Dated model claims</strong>
 
             </div>
-            </div></div></div>
+            </div></div></div></div>
     </section>
 
 
@@ -926,10 +933,10 @@ th { background: var(--ink); color: #fff; }
           <div class="eyebrow">real world implications</div>
           <h2 id="section-real_world_implications-title">What this means for builders and researchers</h2>
         </div>
-        <p class="section-summary">Tool-using LLM agents are ready to automate knowledge work today with the right guardrails. Multi-agent pipelines add power but also failure modes. Physical robots and true autonomy are still 5+ years out.</p>
+        <p class="section-summary">Build supervised tool agents first. Treat multi-agent and physical autonomy as higher-risk bets.</p>
       </div>
-      <div class="section-body"><p><strong>For builders today:</strong> The ReAct pattern (Reason + Act loop) and its derivatives (LangChain Agents, AutoGen, CrewAI) give you a production-adjacent agent scaffold in days, not months. The reliability problem — agents that loop, hallucinate tool calls, or confidently do the wrong thing — is the main engineering challenge. Treat the LLM as an unreliable junior engineer: give it deterministic tools (search, code exec, DB queries), require it to show evidence before committing, and build human-in-the-loop checkpoints for high-stakes decisions. <strong>For researchers:</strong> The evaluation gap is the most impactful open problem. A well-designed agent benchmark suite analogous to MMLU for reasoning or HumanEval for code would unlock the field. Agent safety and alignment (not just capability) is underinvested. <strong>For product leaders:</strong> Agent-as-a-Service is a real business model — domain-specific agents with verified tool access are sellable now. The risk is reliability and liability: when an agent makes a costly mistake (sends a wrong email, books a wrong flight), who is responsible? This is a legal and product design question, not just a technical one.</p>
-<ul><li>ReAct + tool use + guardrails = viable knowledge-work automation today</li><li>Evaluation is the field&#x27;s biggest unsolved infrastructure problem</li><li>Physical robotics and full autonomy: 5+ year horizon for production reliability</li><li>Liability and accountability are the unsolved product/legal questions for deployed agents</li></ul>
+      <div class="section-body"><p><strong>For builders:</strong> ReAct-style tool loops and frameworks like LangChain, AutoGen, and CrewAI make useful agents possible quickly. The hard part is reliability: loops, hallucinated tool calls, bad evidence, and costly actions. Give agents deterministic tools, require evidence, and add human approval for consequential steps. <strong>For researchers:</strong> evaluation and safety are the infrastructure gaps. <strong>For product leaders:</strong> domain-specific agents with verified tool access are sellable, but liability is still a product and legal problem.</p>
+<ul><li>ReAct + tools + guardrails = viable knowledge-work automation</li><li>Evaluation is the field&#x27;s biggest unsolved infrastructure problem</li><li>Liability and accountability are still unresolved</li></ul>
 <div class="visual visual-funnel"><div class="visual-title">Deployment readiness ladder for LLM agents</div><div class="funnel-list">
         <div class="funnel-step">
           <strong>Research demo</strong>
@@ -970,28 +977,28 @@ th { background: var(--ink); color: #fff; }
           <div class="eyebrow">learning path</div>
           <h2 id="section-learning_path-title">Three papers to read next</h2>
         </div>
-        <p class="section-summary">Start with the ReAct paper to understand the core reasoning-action loop, then Generative Agents for multi-agent dynamics, then ToolFormer for how tool use is taught.</p>
+        <p class="section-summary">Read ReAct for the core loop, Generative Agents for multi-agent dynamics, and ToolFormer for learned tool use.</p>
       </div>
       <div class="section-body"><div class="learning-grid">
         <article class="learning-card">
           <span class="read-number">1</span>
           <h3><a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noreferrer">ReAct: Synergizing Reasoning and Acting in Language Models</a></h3>
-          <p>The foundational paper for the Reason + Act loop that almost every LLM agent uses. Understanding ReAct gives you the vocabulary to read every other agent paper.</p>
-          <p class="why-read"><strong>Read for:</strong> Core architecture: how to interleave thought, action, and observation in a single prompt</p>
+          <p>The core Reason + Act loop behind many LLM agents.</p>
+          <p class="why-read"><strong>Read for:</strong> Interleaving reasoning, action, and observation</p>
         </article>
 
         <article class="learning-card">
           <span class="read-number">2</span>
           <h3><a href="https://arxiv.org/abs/2304.03442" target="_blank" rel="noreferrer">Generative Agents: Interactive Simulacra of Human Behavior</a></h3>
-          <p>The Smallville paper — 25 agents in a simulated town exhibiting emergent social behaviour. The most striking demonstration of multi-agent dynamics and the closest thing to &#x27;agent society&#x27; in the survey.</p>
-          <p class="why-read"><strong>Read for:</strong> Memory architecture, agent personalisation, emergent social phenomena</p>
+          <p>Smallville shows emergent behavior from 25 simulated agents.</p>
+          <p class="why-read"><strong>Read for:</strong> Memory, personalisation, and social dynamics</p>
         </article>
 
         <article class="learning-card">
           <span class="read-number">3</span>
           <h3><a href="https://arxiv.org/abs/2302.04761" target="_blank" rel="noreferrer">Toolformer: Language Models Can Teach Themselves to Use Tools</a></h3>
-          <p>Shows how tool use can be learned, not just prompted. Key for understanding the difference between zero-shot tool use (ReAct) and learned tool use (Toolformer).</p>
-          <p class="why-read"><strong>Read for:</strong> Self-supervised tool-use learning, API call generation, training signal design</p>
+          <p>Shows how tool use can be learned rather than only prompted.</p>
+          <p class="why-read"><strong>Read for:</strong> Tool-use learning and API call generation</p>
         </article>
         </div></div>
     </section>
@@ -1001,87 +1008,87 @@ th { background: var(--ink); color: #fff; }
       <div class="section-head">
         <div>
           <div class="eyebrow">quiz</div>
-          <h2 id="section-quiz-title">Check your understanding</h2>
+          <h2 id="section-quiz-title">Apply the research</h2>
         </div>
-
+        <p class="section-summary">Use the survey to reason about business strategy, product design, and future research priorities.</p>
       </div>
       <div class="section-body"><div class="quiz-grid">
         <article class="quiz-card">
           <div class="quiz-topic">
-            <span>paper comprehension</span>
+            <span>product strategy</span>
             <div class="label">Question 1</div>
           </div>
           <div>
-            <h3>In the Brain-Perception-Action framework, which module is primarily responsible for handling the LLM&#x27;s inability to remember past conversations beyond its context window?</h3>
-            <ol class="choices" type="A"><li>The Perception module, by compressing multimodal inputs</li><li>The Brain module&#x27;s memory systems — summarisation, vector stores, and external databases</li><li>The Action module&#x27;s tool-use capability</li><li>A dedicated memory LLM running in parallel</li></ol>
+            <h3>You are choosing the first agent product for an enterprise team. Which wedge best matches the survey&#x27;s evidence?</h3>
+            <ol class="choices" type="A"><li>A fully autonomous executive assistant that books, buys, sends, and deploys without review</li><li>A supervised research, coding, or document agent with verified tools, audit logs, and human approval</li><li>A social simulation platform built around dozens of agents interacting freely</li><li>A physical office robot controlled directly by an LLM planner</li></ol>
             <details class="answer">
               <summary>Show answer</summary>
-              <p><strong>Correct:</strong> The Brain module&#x27;s memory systems — summarisation, vector stores, and external databases</p>
-              <p>The paper dedicates section 3.1.3 to memory within the Brain module, covering three strategies: summarising historical context into shorter representations, compressing memories into vector embeddings retrieved by similarity, and using external structured databases (ChatDB, DB-GPT) that the LLM queries via SQL. This is a Brain-layer problem, not a Perception or Action problem.</p>
+              <p><strong>Correct:</strong> A supervised research, coding, or document agent with verified tools, audit logs, and human approval</p>
+              <p>The survey&#x27;s strongest near-term signal is tool-using knowledge work. Human review and auditability turn brittle autonomy into accountable automation.</p>
             </details>
           </div>
         </article>
 
         <article class="quiz-card">
           <div class="quiz-topic">
-            <span>field understanding</span>
+            <span>business model</span>
             <div class="label">Question 2</div>
           </div>
           <div>
-            <h3>Why did symbolic AI agents, which could reason explicitly and were interpretable, eventually give way to LLM-based approaches?</h3>
-            <ol class="choices" type="A"><li>Symbolic agents were too slow to run on 1980s hardware</li><li>They required exhaustive hand-coded rules and could not generalise to novel domains or handle uncertainty</li><li>The legal liability of rule-based systems was too high</li><li>Symbolic agents could not produce natural language output</li></ol>
+            <h3>A startup pitches a generic autonomous agent that can handle travel, purchasing, email, and deployments for any company. What is the strongest business critique from the paper?</h3>
+            <ol class="choices" type="A"><li>The product is too narrow because it focuses on too few workflows</li><li>The business should remove all human review to maximize automation value</li><li>Generic autonomy is hard to defend because reliability, liability, and workflow integration are the real bottlenecks</li><li>The main issue is that agents cannot use APIs</li></ol>
             <details class="answer">
               <summary>Show answer</summary>
-              <p><strong>Correct:</strong> They required exhaustive hand-coded rules and could not generalise to novel domains or handle uncertainty</p>
-              <p>Symbolic agents encoded knowledge as logical rules, which meant every new domain needed new rules. They also struggled with uncertainty and large-scale real-world problems because symbolic reasoning is computationally intractable at scale. LLMs sidestep this by learning statistical representations from data, giving them implicit generalisation.</p>
+              <p><strong>Correct:</strong> Generic autonomy is hard to defend because reliability, liability, and workflow integration are the real bottlenecks</p>
+              <p>The survey points toward vertical, accountable automation: clear permissions, domain tools, observability, and responsibility boundaries.</p>
             </details>
           </div>
         </article>
 
         <article class="quiz-card">
           <div class="quiz-topic">
-            <span>business insight</span>
+            <span>product design</span>
             <div class="label">Question 3</div>
           </div>
           <div>
-            <h3>A company wants to deploy an LLM agent that books travel for employees. Based on the survey&#x27;s framing, which design choice most directly addresses the liability problem when the agent makes a costly error?</h3>
-            <ol class="choices" type="A"><li>Use a larger LLM to reduce errors</li><li>Build a human-in-the-loop checkpoint before any booking is confirmed</li><li>Log all agent actions to a database</li><li>Use chain-of-thought prompting to make the agent explain itself</li></ol>
+            <h3>You are building a customer-support agent that can issue refunds and update accounts. Which design choice best applies the survey&#x27;s risk lessons?</h3>
+            <ol class="choices" type="A"><li>Let the agent act freely, then inspect logs if customers complain</li><li>Use retrieval, narrow tool permissions, approval thresholds for consequential actions, and rollback paths</li><li>Use a multi-agent debate before every refund so the system seems more robust</li><li>Avoid tools entirely and make the agent answer only from memory</li></ol>
             <details class="answer">
               <summary>Show answer</summary>
-              <p><strong>Correct:</strong> Build a human-in-the-loop checkpoint before any booking is confirmed</p>
-              <p>The survey highlights the instructor-executor and equal-partnership paradigms for human-agent cooperation precisely because full autonomy for consequential decisions is not yet trustworthy. Logging and CoT help with debugging and interpretability, but they do not prevent mistakes — only a human checkpoint can catch them before the consequential action fires.</p>
+              <p><strong>Correct:</strong> Use retrieval, narrow tool permissions, approval thresholds for consequential actions, and rollback paths</p>
+              <p>The paper&#x27;s implication is not &#x27;trust the agent more.&#x27; It is to design the action layer so errors are constrained, reviewable, and recoverable.</p>
             </details>
           </div>
         </article>
 
         <article class="quiz-card">
           <div class="quiz-topic">
-            <span>product insight</span>
+            <span>future research</span>
             <div class="label">Question 4</div>
           </div>
           <div>
-            <h3>Voyager achieves lifelong learning in Minecraft using a skill library. What would be the analogous design pattern for a software engineering agent that needs to accumulate reusable capabilities over time?</h3>
-            <ol class="choices" type="A"><li>Fine-tune the LLM on every new codebase it encounters</li><li>Store verified, self-documented code snippets and functions in a retrievable library that the agent can query when facing similar tasks</li><li>Give the agent access to GitHub search</li><li>Run multiple specialised agents in parallel for different programming languages</li></ol>
+            <h3>A research lab wants to move the agent field forward rather than publish another impressive demo. Which project is most aligned with the survey&#x27;s biggest gap?</h3>
+            <ol class="choices" type="A"><li>A benchmark that measures long-horizon task success, cost, recovery from loops, unsafe tool calls, and human handoff quality</li><li>A larger prompt library for making AutoGPT-style systems sound more confident</li><li>A single new agent demo in a cherry-picked workflow</li><li>A taxonomy that renames Brain-Perception-Action without evaluating systems</li></ol>
             <details class="answer">
               <summary>Show answer</summary>
-              <p><strong>Correct:</strong> Store verified, self-documented code snippets and functions in a retrievable library that the agent can query when facing similar tasks</p>
-              <p>Voyager&#x27;s key innovation is exactly this: a skill library of reusable, self-verified programs indexed for retrieval. The direct analogue for a coding agent is a curated, tested snippet library with semantic search — so the agent can retrieve and compose past solutions rather than re-generating from scratch every time.</p>
+              <p><strong>Correct:</strong> A benchmark that measures long-horizon task success, cost, recovery from loops, unsafe tool calls, and human handoff quality</p>
+              <p>The field needs evaluation infrastructure that separates real capability from demo polish, especially on safety and long-running failures.</p>
             </details>
           </div>
         </article>
 
         <article class="quiz-card">
           <div class="quiz-topic">
-            <span>general research context</span>
+            <span>market timing</span>
             <div class="label">Question 5</div>
           </div>
           <div>
-            <h3>The survey identifies a major evaluation gap in the LLM-agent field. What is the most accurate characterisation of why this gap matters?</h3>
-            <ol class="choices" type="A"><li>Without benchmarks, companies cannot comply with AI regulation</li><li>Without agreed metrics and test suites, it is impossible to know whether one agent system is genuinely better than another, or just better-demo&#x27;d</li><li>Evaluation is needed to calculate the cost of running agents at scale</li><li>The gap means agents cannot be compared across different programming languages</li></ol>
+            <h3>An investor asks whether to prioritize embodied robot agents or software tool agents over the next two years. What does the survey imply?</h3>
+            <ol class="choices" type="A"><li>Physical robot agents are the safer near-term bet because simulation results transfer directly</li><li>Software tool agents are nearer-term; embodied autonomy remains a longer-horizon bet because grounding and evaluation are weak</li><li>Both categories have identical readiness because both use LLMs as the Brain layer</li><li>Agent societies are the most commercially mature category</li></ol>
             <details class="answer">
               <summary>Show answer</summary>
-              <p><strong>Correct:</strong> Without agreed metrics and test suites, it is impossible to know whether one agent system is genuinely better than another, or just better-demo&#x27;d</p>
-              <p>This is the core scientific problem. The survey notes that current evaluations span utility, sociability, values, and continual evolution — but no benchmark covers all four in a standardised way. Without this, the field risks optimising for whatever is easy to demo rather than what actually matters for reliable, safe deployment.</p>
+              <p><strong>Correct:</strong> Software tool agents are nearer-term; embodied autonomy remains a longer-horizon bet because grounding and evaluation are weak</p>
+              <p>Tool agents operate in inspectable digital environments with deterministic APIs. Physical autonomy adds perception, control, safety, and sim-to-real risk.</p>
             </details>
           </div>
         </article>

@@ -1,0 +1,37 @@
+{
+  "name": "customer-support-ai-chatbots",
+  "keywords": [
+    "customer support chatbots",
+    "customer service conversational AI",
+    "AI help desk assistants",
+    "large language models for customer service",
+    "retrieval augmented generation customer support",
+    "task-oriented dialogue systems",
+    "contact center automation"
+  ],
+  "openalex_topics": [
+    "Natural Language Processing",
+    "Artificial Intelligence",
+    "Human-Computer Interaction",
+    "Information Retrieval"
+  ],
+  "arxiv_categories": [
+    "cs.AI",
+    "cs.CL",
+    "cs.HC",
+    "cs.IR",
+    "cs.LG"
+  ],
+  "must_include": [],
+  "must_exclude": [
+    "editorial",
+    "commentary",
+    "letter",
+    "position paper",
+    "social media",
+    "political"
+  ],
+  "recency_days": 730,
+  "min_year": 2020,
+  "max_results_to_score": 50
+}

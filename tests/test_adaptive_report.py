@@ -769,6 +769,20 @@ class AdaptiveReportTests(unittest.TestCase):
         self.assertIn('class="visual visual-funnel"', html)
         self.assertIn("Controlled examples", html)
 
+    def test_mobile_keeps_matrix_and_heatmap_as_scrollable_grids(self):
+        renderer = load_renderer()
+        html = renderer.build_html(sample_adaptive_analysis(), "adaptive-clinical-ai")
+
+        self.assertIn('class="heatmap-scroll"', html)
+        self.assertIn('class="matrix-scroll"', html)
+        self.assertIn(".heatmap-scroll, .matrix-scroll", html)
+        self.assertIn("overflow-x: auto", html)
+        self.assertIn("--heat-min-width", html)
+        self.assertIn("--matrix-min-width", html)
+        self.assertIn("min-width: var(--heat-min-width, 100%)", html)
+        self.assertIn("min-width: var(--matrix-min-width, 100%)", html)
+        self.assertNotIn(".heatmap-grid, .matrix-grid { grid-template-columns: 1fr; }", html)
+
     def test_adaptive_report_plan_renders_sections_and_visuals(self):
         renderer = load_renderer()
         html = renderer.build_html(sample_adaptive_analysis(), "adaptive-clinical-ai")

@@ -8,7 +8,7 @@ The core pipeline is:
 paper -> analysis.json -> adaptive report_plan -> renderer -> report.html
 ```
 
-Everything for a paper lives in the repo under `papers/<slug>/`, so the source pointer, structured analysis, and generated artifact are easy to review and diff.
+Everything for a paper lives in the repo under `papers/<slug>/`, so the source pointer, structured analysis, insight dashboard, so-what layer, and generated artifact are easy to review and diff.
 
 ---
 
@@ -87,7 +87,18 @@ python paper-reading-assistant/scripts/workflow_status.py --slug <slug>
 - `narrative_arc`: the ordered story for this specific paper.
 - `sections[]`: typed blocks with title, takeaway, content, caveats, and optional visuals.
 
-The renderer keeps a consistent visual shell, but the paper decides the body. A method paper can emphasize architecture and ablations. A benchmark paper can emphasize task setup and comparisons. A dataset paper can emphasize collection, coverage, bias, and use cases. A theory paper can emphasize assumptions, claims, intuition, and open questions.
+The renderer keeps a consistent visual shell, but the paper decides the body and top-level insight modules. A survey paper can emphasize field maps, maturity bars, and opportunity matrices. A method paper can emphasize architecture and ablations. A benchmark paper can emphasize task setup and comparisons. A dataset paper can emphasize collection, coverage, bias, and use cases. A theory paper can emphasize assumptions, claims, intuition, and open questions.
+
+The newer insight layer is additive to `report_plan`:
+
+```text
+insight_dashboard     early cards and primary visuals after reader orientation
+evidence_profile      claim support/risk bars
+so_what               research, product, and business lenses
+opportunity_matrix    value/feasibility or readiness/risk map
+```
+
+The so-what layer is intentionally first-class, but it should appear after the reader has the paper context needed to understand it. A report should say what the paper means for research direction, product decisions, and business opportunity or risk.
 
 Supported section types include:
 
@@ -164,8 +175,8 @@ papers/<slug>/source.md + analysis.json
 Selection score is out of 100:
 
 - Relevance: 35
-- Citation signal: 20
-- Recency/trend: 15
+- Citation signal: 17
+- Recency/trend: 18
 - Curated popularity: 10
 - Source credibility: 8
 - Accessibility: 7

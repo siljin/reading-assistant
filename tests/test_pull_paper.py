@@ -184,6 +184,32 @@ Paper Links
         self.assertEqual(winner.candidate["title"], relevant["title"])
         self.assertGreater(winner.breakdown["relevance"], winner.breakdown["citation_signal"])
 
+    def test_recency_gets_slight_edge_over_citations_for_equally_relevant_papers(self):
+        puller = load_puller()
+        profile = puller.normalize_profile({
+            "name": "medical-ai",
+            "keywords": ["medical diagnosis"],
+            "recency_days": 730,
+            "max_results_to_score": 20,
+        })
+        fresh = candidate(
+            "Fresh Medical Diagnosis Agent",
+            abstract="medical diagnosis agent",
+            publication_date="2026-06-01",
+            citations=5,
+        )
+        older_more_cited = candidate(
+            "Older Medical Diagnosis Agent",
+            abstract="medical diagnosis agent",
+            publication_date="2025-06-01",
+            citations=65,
+        )
+
+        winner = puller.select_best_paper([older_more_cited, fresh], profile, pulled_ids=set(), today=date(2026, 6, 19))
+
+        self.assertEqual(winner.candidate["title"], fresh["title"])
+        self.assertGreater(winner.breakdown["recency_trend"], winner.breakdown["citation_signal"])
+
     def test_hard_filters_and_already_pulled_skip_candidates(self):
         puller = load_puller()
         profile = puller.normalize_profile({

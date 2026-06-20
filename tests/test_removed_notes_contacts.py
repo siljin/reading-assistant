@@ -38,6 +38,10 @@ class RemovedNotesContactsTests(unittest.TestCase):
             self.assertFalse((folder / "notes.md").exists())
             analysis = json.loads(analysis_path.read_text(encoding="utf-8"))
             self.assertIn("report_plan", analysis)
+            self.assertIn("insight_dashboard", analysis)
+            self.assertIn("so_what", analysis)
+            self.assertIn("evidence_profile", analysis)
+            self.assertIn("opportunity_matrix", analysis)
 
     def test_removed_optional_server_and_packaging_artifacts_are_absent(self):
         self.assertFalse((SCRIPTS / "serve.py").exists())

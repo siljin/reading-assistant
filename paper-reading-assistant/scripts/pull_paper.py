@@ -29,6 +29,13 @@ DAIR_RAW_BASE = "https://raw.githubusercontent.com/dair-ai/AI-Papers-of-the-Week
 CURATED_SOURCE_LABELS = {
     "dair-ai-weekly": "DAIR AI Papers of the Week",
 }
+RELEVANCE_POINTS = 35.0
+CITATION_POINTS = 17.0
+RECENCY_POINTS = 18.0
+CURATED_POPULARITY_POINTS = 10.0
+SOURCE_CREDIBILITY_POINTS = 8.0
+ACCESSIBILITY_POINTS = 7.0
+NOVELTY_DIVERSITY_POINTS = 5.0
 
 
 class ScoredPaper:
@@ -412,14 +419,14 @@ def score_relevance(candidate: dict, profile: dict) -> float:
         if category.lower() in arxiv_text:
             score += 6
 
-    return min(35.0, score)
+    return min(RELEVANCE_POINTS, score)
 
 
 def score_citations(candidate: dict, today: date) -> float:
     pub_date = parse_date(candidate.get("publication_date"), candidate.get("publication_year")) or today
     age_years = max((today - pub_date).days / 365.25, 0.25)
     annualized = float(candidate.get("cited_by_count") or 0) / age_years
-    return min(20.0, math.log1p(annualized) / math.log1p(250) * 20)
+    return min(CITATION_POINTS, math.log1p(annualized) / math.log1p(250) * CITATION_POINTS)
 
 
 def score_recency(candidate: dict, profile: dict, today: date) -> float:
@@ -429,15 +436,15 @@ def score_recency(candidate: dict, profile: dict, today: date) -> float:
     age_days = max((today - pub_date).days, 0)
     window = max(int(profile["recency_days"]), 1)
     if age_days > window:
-        return max(0.0, 15.0 * (window / age_days) * 0.25)
-    return 15.0 * (1 - (age_days / window) * 0.5)
+        return max(0.0, RECENCY_POINTS * (window / age_days) * 0.25)
+    return RECENCY_POINTS * (1 - (age_days / window) * 0.5)
 
 
 def score_source(candidate: dict) -> float:
     url = source_url(candidate).lower()
     source_name = (((candidate.get("primary_location") or {}).get("source") or {}).get("display_name") or "").lower()
     if "arxiv.org" in url or "arxiv" in source_name:
-        return 8.0
+        return SOURCE_CREDIBILITY_POINTS
     if source_name:
         return 6.0
     return 3.0
@@ -453,7 +460,7 @@ def score_accessibility(candidate: dict) -> float:
         score += 2
     if candidate.get("abstract"):
         score += 1
-    return min(7.0, score)
+    return min(ACCESSIBILITY_POINTS, score)
 
 
 def score_curated_popularity(candidate: dict) -> float:
@@ -466,7 +473,7 @@ def score_curated_popularity(candidate: dict) -> float:
         if rank is None:
             scores.append(6.0)
         elif int(rank) <= 5:
-            scores.append(10.0)
+            scores.append(CURATED_POPULARITY_POINTS)
         elif int(rank) <= 10:
             scores.append(8.0)
         else:
@@ -476,7 +483,7 @@ def score_curated_popularity(candidate: dict) -> float:
 
 def score_novelty(candidate: dict, papers_dir: Path | None = None) -> float:
     if not papers_dir or not papers_dir.exists():
-        return 5.0
+        return NOVELTY_DIVERSITY_POINTS
     title_words = set(re.findall(r"[a-z0-9]+", str(candidate.get("title") or "").lower()))
     if not title_words:
         return 0.0
@@ -489,7 +496,7 @@ def score_novelty(candidate: dict, papers_dir: Path | None = None) -> float:
         existing_words = set(re.findall(r"[a-z0-9]+", existing_title))
         if existing_words and len(title_words & existing_words) / len(title_words | existing_words) > 0.55:
             return 0.0
-    return 5.0
+    return NOVELTY_DIVERSITY_POINTS
 
 
 def score_candidate(candidate: dict, profile: dict, today: date, papers_dir: Path | None = None) -> ScoredPaper:
@@ -588,6 +595,41 @@ def starter_analysis(candidate: dict, slug: str) -> dict:
         "implementation": {"feasibility": "", "requirements": [], "cheapest_validation": ""},
         "implications": {"research": [], "practice": [], "personal": []},
         "knowledge_graph": {"nodes": [], "edges": []},
+        "insight_dashboard": {
+            "cards": [{"label": "", "value": "", "caption": ""}],
+            "primary_visuals": [],
+        },
+        "evidence_profile": {
+            "claims": [{"claim": "", "support": 0, "risk": 0, "caption": ""}],
+        },
+        "so_what": {
+            "research": {
+                "headline": "",
+                "implications": [],
+                "open_questions": [],
+                "next_actions": [],
+            },
+            "product": {
+                "headline": "",
+                "opportunities": [],
+                "guardrails": [],
+                "next_actions": [],
+            },
+            "business": {
+                "headline": "",
+                "market_openings": [],
+                "adoption_blockers": [],
+                "risks": [],
+                "next_actions": [],
+            },
+        },
+        "opportunity_matrix": {
+            "x_axis": "Feasibility",
+            "y_axis": "Strategic value",
+            "columns": [],
+            "rows": [],
+            "cells": [],
+        },
         "report_plan": {
             "paper_archetype": "",
             "reader_goal": "",

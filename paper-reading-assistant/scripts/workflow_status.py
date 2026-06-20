@@ -47,6 +47,18 @@ def has_quiz(sections: list[dict]) -> bool:
     return False
 
 
+def has_so_what_lens(so_what: dict, lens: str) -> bool:
+    values = so_what.get(lens) or {}
+    if not isinstance(values, dict):
+        return False
+    if nonempty(values.get("headline")):
+        return True
+    for value in values.values():
+        if isinstance(value, list) and any(nonempty(item) for item in value):
+            return True
+    return False
+
+
 def missing_required_fields(analysis: dict) -> list[str]:
     missing = []
     paper = analysis.get("paper") or {}
@@ -68,6 +80,11 @@ def missing_required_fields(analysis: dict) -> list[str]:
             missing.append("report_plan.sections.learning_path")
         if not has_quiz(sections):
             missing.append("report_plan.sections.quiz")
+    if "so_what" in analysis:
+        so_what = analysis.get("so_what") or {}
+        for lens in ("research", "product", "business"):
+            if not has_so_what_lens(so_what, lens):
+                missing.append(f"so_what.{lens}")
     return missing
 
 

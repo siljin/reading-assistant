@@ -52,6 +52,41 @@ ANALYSIS_TEMPLATE = {
     "implementation": {"feasibility": "", "requirements": [], "cheapest_validation": ""},
     "implications": {"research": [], "practice": [], "personal": []},
     "knowledge_graph": {"nodes": [], "edges": []},
+    "insight_dashboard": {
+        "cards": [{"label": "", "value": "", "caption": ""}],
+        "primary_visuals": [],
+    },
+    "evidence_profile": {
+        "claims": [{"claim": "", "support": 0, "risk": 0, "caption": ""}],
+    },
+    "so_what": {
+        "research": {
+            "headline": "",
+            "implications": [],
+            "open_questions": [],
+            "next_actions": [],
+        },
+        "product": {
+            "headline": "",
+            "opportunities": [],
+            "guardrails": [],
+            "next_actions": [],
+        },
+        "business": {
+            "headline": "",
+            "market_openings": [],
+            "adoption_blockers": [],
+            "risks": [],
+            "next_actions": [],
+        },
+    },
+    "opportunity_matrix": {
+        "x_axis": "Feasibility",
+        "y_axis": "Strategic value",
+        "columns": [],
+        "rows": [],
+        "cells": [],
+    },
     "report_plan": {
         "paper_archetype": "",
         "reader_goal": "",

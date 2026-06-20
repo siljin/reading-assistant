@@ -30,6 +30,8 @@ fills `analysis.json`.
 5. Complete `papers/<slug>/analysis.json` using the paper-reading skill:
    - fill paper metadata, headline, summaries, novelty, methods, results,
      limitations, implementation notes, implications, and knowledge graph;
+   - fill `insight_dashboard`, `evidence_profile`, `so_what`, and
+     `opportunity_matrix`, with research/product/business so-what lenses;
    - build an adaptive `report_plan`;
    - include a `learning_path` section and a `quiz` section.
 6. Check readiness:

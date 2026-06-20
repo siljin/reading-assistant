@@ -67,6 +67,13 @@ Could a real team use this? Cover prerequisites, effort level, data needs, compu
 
 The renderer provides a consistent visual shell. The paper decides the order and emphasis through `report_plan`.
 
+Before writing long sections, fill the insight blocks that power the top of the report:
+
+- `insight_dashboard`: two to six cards and optional primary visuals that orient the reader quickly.
+- `evidence_profile`: load-bearing claims with support and risk scores from 0 to 10.
+- `so_what`: concrete Research, Product, and Business lenses. Each lens needs a headline plus implications, risks, opportunities, or next actions. This is a primary output, not an afterthought.
+- `opportunity_matrix`: when useful, a value/feasibility, risk/readiness, or evidence/impact matrix that turns the paper into decisions.
+
 Set:
 
 - `paper_archetype`: method, benchmark, dataset, theory, survey, systems, clinical, product/deployment, etc.
@@ -90,13 +97,13 @@ Section types:
 
 Choose the explanation shape by archetype:
 
-- **Method paper**: problem -> architecture -> algorithm steps -> ablations -> limitations -> implementation notes.
-- **Benchmark paper**: task setup -> dataset/eval protocol -> result comparisons -> caveats -> field implications.
-- **Dataset paper**: data source -> collection pipeline -> coverage/distribution -> bias/risk -> use cases.
-- **Theory paper**: problem -> assumptions -> theorem or claim -> intuition -> implications -> open questions.
-- **Clinical/deployment paper**: workflow -> study design -> outcomes -> safety gaps -> product/regulatory implications.
-- **Survey paper**: field map -> taxonomy -> major agreements -> disagreements -> what to read next.
-- **Systems paper**: architecture -> workload -> performance trade-offs -> operational constraints -> adoption risks.
+- **Survey paper**: field map -> taxonomy heatmap -> maturity bars -> major agreements/disagreements -> opportunity matrix -> so-what lenses.
+- **Method paper**: problem -> architecture/algorithm flow -> novelty comparison -> results/ablations -> implementation feasibility -> adoption risks.
+- **Benchmark paper**: task setup -> dataset/eval protocol -> leaderboard or metric comparisons -> caveats -> usefulness matrix.
+- **Dataset paper**: data source -> collection pipeline -> coverage/distribution -> bias/risk map -> use-case matrix.
+- **Theory paper**: assumptions -> theorem or claim -> intuition ladder -> applicability limits -> research implications.
+- **Systems paper**: architecture -> workload -> performance trade-offs -> operational constraints -> adoption readiness.
+- **Clinical/deployment paper**: workflow -> study/evidence quality -> safety and regulatory matrix -> adoption readiness -> business/liability risks.
 
 ## Visual Selection
 
@@ -105,6 +112,7 @@ Use visuals when they reduce cognitive load. Do not force a visual just because 
 - `cards`: important counts, definitions, or takeaways.
 - `flow`: process, pipeline, algorithm, clinical workflow.
 - `bar_chart`: comparable quantities or score magnitudes.
+- `line_chart`: trend, momentum, or timeline-as-quantity when the x-axis order matters.
 - `matrix`: two-axis trade-offs, belief calibration, risk/value map.
 - `timeline`: evolution of a field or follow-on work.
 - `comparison`: before/after, old/new, baseline/proposed.

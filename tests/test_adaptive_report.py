@@ -142,6 +142,278 @@ def sample_adaptive_analysis():
 
 
 class AdaptiveReportTests(unittest.TestCase):
+    def test_insight_dashboard_so_what_and_source_link_render_prominently(self):
+        renderer = load_renderer()
+        analysis = sample_adaptive_analysis()
+        analysis["insight_dashboard"] = {
+            "cards": [
+                {
+                    "label": "Evidence base",
+                    "value": "300+ papers",
+                    "caption": "Qualitative survey of the field.",
+                },
+                {
+                    "label": "Builder readiness",
+                    "value": "Tool agents: high",
+                    "caption": "Physical agents remain early.",
+                },
+            ],
+            "primary_visuals": [
+                {
+                    "type": "bar_chart",
+                    "title": "Maturity by area",
+                    "bars": [
+                        {"label": "Tool use", "value": 8, "max": 10},
+                        {"label": "Robotics", "value": 3, "max": 10},
+                    ],
+                },
+                {
+                    "type": "line_chart",
+                    "title": "Field momentum",
+                    "points": [
+                        {"label": "2021", "value": 1},
+                        {"label": "2022", "value": 4},
+                        {"label": "2023", "value": 9},
+                    ],
+                }
+            ],
+        }
+        analysis["evidence_profile"] = {
+            "claims": [
+                {
+                    "claim": "Tool-using agents are product-adjacent.",
+                    "support": 8,
+                    "risk": 5,
+                    "caption": "Supported by many systems, but reliability remains uneven.",
+                }
+            ]
+        }
+        analysis["so_what"] = {
+            "research": {
+                "headline": "Build better agent benchmarks.",
+                "implications": ["Current demos are hard to compare."],
+                "open_questions": ["How should sociability and safety be measured?"],
+                "next_actions": ["Design shared evaluation suites."],
+            },
+            "product": {
+                "headline": "Ship supervised tool agents first.",
+                "opportunities": ["Research assistants and coding copilots."],
+                "guardrails": ["Human review before consequential actions."],
+                "next_actions": ["Pilot in internal workflows."],
+            },
+            "business": {
+                "headline": "Sell reliability, not autonomy.",
+                "market_openings": ["Domain-specific agent services."],
+                "adoption_blockers": ["Liability for wrong actions."],
+                "risks": ["Cost and trust failures."],
+                "next_actions": ["Define accountability boundaries."],
+            },
+        }
+        analysis["opportunity_matrix"] = {
+            "x_axis": "Feasibility",
+            "y_axis": "Strategic value",
+            "columns": ["Lower feasibility", "Higher feasibility"],
+            "rows": ["Higher value", "Lower value"],
+            "cells": [
+                {"label": "Agent teams", "caption": "Promising but brittle.", "tone": "caution"},
+                {"label": "Research assistant", "caption": "Build now.", "tone": "good"},
+                {"label": "Humanoid autonomy", "caption": "Too early.", "tone": "bad"},
+                {"label": "FAQ bot", "caption": "Easy but commoditized.", "tone": "neutral"},
+            ],
+        }
+
+        html = renderer.build_html(analysis, "adaptive-clinical-ai")
+
+        self.assertIn('class="source-button"', html)
+        self.assertIn('href="https://example.com/paper"', html)
+        self.assertIn("insight-dashboard", html)
+        self.assertIn("Evidence base", html)
+        self.assertIn('class="visual visual-bar_chart"', html)
+        self.assertIn('class="visual visual-line_chart"', html)
+        self.assertIn("Field momentum", html)
+        self.assertIn('class="evidence-profile"', html)
+        self.assertIn("Tool-using agents are product-adjacent.", html)
+        self.assertIn("so-what-section", html)
+        self.assertIn("Build better agent benchmarks.", html)
+        self.assertIn("Ship supervised tool agents first.", html)
+        self.assertIn("Sell reliability, not autonomy.", html)
+        self.assertIn('class="visual visual-matrix"', html)
+        self.assertIn("Research assistant", html)
+        self.assertIn("data-lens-tab", html)
+
+    def test_archetype_modules_adapt_without_forcing_survey_layout(self):
+        renderer = load_renderer()
+        survey = sample_adaptive_analysis()
+        survey["report_plan"]["paper_archetype"] = "survey"
+        method = sample_adaptive_analysis()
+        method["report_plan"]["paper_archetype"] = "method"
+
+        survey_html = renderer.build_html(survey, "survey-paper")
+        method_html = renderer.build_html(method, "method-paper")
+
+        self.assertIn("Field map", survey_html)
+        self.assertIn("Opportunity matrix", survey_html)
+        self.assertIn("Architecture flow", method_html)
+        self.assertIn("Implementation feasibility", method_html)
+        self.assertNotIn("Architecture flow", survey_html)
+        self.assertNotIn("Field map", method_html)
+
+    def test_context_sections_render_before_dashboard_and_so_what(self):
+        renderer = load_renderer()
+        analysis = sample_adaptive_analysis()
+        analysis["insight_dashboard"] = {
+            "cards": [{"label": "Evidence base", "value": "Controlled study", "caption": "Context-dependent"}],
+            "primary_visuals": [],
+        }
+        analysis["so_what"] = {
+            "research": {"headline": "Research implication", "next_actions": ["Test the workflow"]},
+            "product": {"headline": "Product implication", "next_actions": ["Pilot with review"]},
+            "business": {"headline": "Business implication", "next_actions": ["Price accountability"]},
+        }
+
+        html = renderer.build_html(analysis, "adaptive-clinical-ai")
+
+        summary_idx = html.index('class="summary-panel adaptive-section section-plain_summary"')
+        context_idx = html.index('class="adaptive-section section-problem_context"')
+        dashboard_idx = html.index('<section class="insight-dashboard adaptive-section"')
+        so_what_idx = html.index('<section class="so-what-section adaptive-section"')
+        experiment_idx = html.index('class="adaptive-section section-experiment_design"')
+
+        self.assertLess(summary_idx, context_idx)
+        self.assertLess(context_idx, dashboard_idx)
+        self.assertLess(dashboard_idx, so_what_idx)
+        self.assertLess(so_what_idx, experiment_idx)
+
+    def test_top_section_menu_matches_rendered_order_and_progress_hooks(self):
+        renderer = load_renderer()
+        analysis = sample_adaptive_analysis()
+        analysis["insight_dashboard"] = {
+            "cards": [{"label": "Evidence base", "value": "Controlled study", "caption": "Context-dependent"}],
+            "primary_visuals": [],
+        }
+        analysis["so_what"] = {
+            "research": {"headline": "Research implication", "next_actions": ["Test the workflow"]},
+            "product": {"headline": "Product implication", "next_actions": ["Pilot with review"]},
+            "business": {"headline": "Business implication", "next_actions": ["Price accountability"]},
+        }
+
+        html = renderer.build_html(analysis, "adaptive-clinical-ai")
+
+        self.assertIn('class="section-menu"', html)
+        self.assertIn('aria-label="Report sections"', html)
+        self.assertIn('id="reading-progress-bar"', html)
+        self.assertIn("data-section-link", html)
+        self.assertIn("IntersectionObserver", html)
+        self.assertIn("requestAnimationFrame", html)
+        self.assertIn("updateActiveSection", html)
+        self.assertIn("getBoundingClientRect", html)
+        self.assertNotIn("section-menu-label", html)
+        self.assertNotIn("reading-progress-label", html)
+        self.assertNotIn("0% read", html)
+        self.assertNotIn("% read", html)
+        self.assertNotIn("section-chip", html)
+
+        expected_links = [
+            ("section-plain_summary", "Plain-language summary"),
+            ("section-problem_context", "Why this problem matters"),
+            ("section-insight_dashboard", "Insight dashboard"),
+            ("section-so_what", "So what"),
+            ("section-experiment_design", "How the study works"),
+            ("section-real_world_implications", "What to do with it"),
+            ("section-learning_path", "Read next"),
+            ("section-quiz", "Check your understanding"),
+        ]
+        previous_link_idx = -1
+        previous_section_idx = -1
+        for anchor_id, label in expected_links:
+            link = f'href="#{anchor_id}"'
+            target = f'id="{anchor_id}"'
+            self.assertIn(link, html)
+            self.assertIn(target, html)
+            link_idx = html.index(link)
+            section_idx = html.index(target)
+            self.assertGreater(link_idx, previous_link_idx)
+            self.assertGreater(section_idx, previous_section_idx)
+            self.assertIn(f">{label}</a>", html)
+            previous_link_idx = link_idx
+            previous_section_idx = section_idx
+
+        context_link_idx = html.index('href="#section-problem_context"')
+        dashboard_link_idx = html.index('href="#section-insight_dashboard"')
+        so_what_link_idx = html.index('href="#section-so_what"')
+        experiment_link_idx = html.index('href="#section-experiment_design"')
+        self.assertLess(context_link_idx, dashboard_link_idx)
+        self.assertLess(dashboard_link_idx, so_what_link_idx)
+        self.assertLess(so_what_link_idx, experiment_link_idx)
+
+    def test_visual_aliases_render_instead_of_disappearing(self):
+        renderer = load_renderer()
+        analysis = sample_adaptive_analysis()
+        analysis["report_plan"]["sections"] = [
+            {
+                "type": "problem_context",
+                "title": "Visual aliases",
+                "content": "The renderer should normalize common analysis shapes.",
+                "visuals": [
+                    {
+                        "type": "timeline",
+                        "title": "Technology evolution",
+                        "data": [
+                            {"era": "1950s-80s", "label": "Symbolic Agents", "note": "Rules and expert systems."},
+                            {"era": "2022-", "label": "LLM Agents", "note": "General reasoning plus tools."},
+                        ],
+                    },
+                    {
+                        "type": "flow",
+                        "title": "Agent loop",
+                        "steps": [
+                            {"label": "Perceive", "note": "Read the environment."},
+                            {"label": "Act", "note": "Use a tool."},
+                        ],
+                    },
+                    {
+                        "type": "comparison",
+                        "title": "Tool use vs embodied action",
+                        "rows": [
+                            {"aspect": "Maturity", "tool_use": "Production-adjacent", "embodied": "Research demo"},
+                            {"aspect": "Failure", "tool_use": "Wrong API call", "embodied": "Unsafe motion"},
+                        ],
+                    },
+                    {
+                        "type": "matrix",
+                        "title": "Coverage matrix",
+                        "x_label": "Severity",
+                        "y_label": "Coverage",
+                        "cells": [
+                            {"x": "High", "y": "Well covered", "items": ["Hallucination", "Misuse"]},
+                            {"x": "High", "y": "Undercovered", "items": ["Cost", "Production failures"]},
+                        ],
+                    },
+                    {
+                        "type": "funnel",
+                        "title": "Readiness ladder",
+                        "stages": [
+                            {"label": "Demo", "description": "Controlled examples"},
+                            {"label": "Product", "description": "Accountable deployment"},
+                        ],
+                    },
+                ],
+            }
+        ]
+
+        html = renderer.build_html(analysis, "visual-aliases")
+
+        self.assertIn('class="visual visual-timeline"', html)
+        self.assertIn("1950s-80s", html)
+        self.assertIn("Rules and expert systems.", html)
+        self.assertIn("Read the environment.", html)
+        self.assertIn('class="visual visual-comparison"', html)
+        self.assertIn("Production-adjacent", html)
+        self.assertIn('class="visual visual-matrix"', html)
+        self.assertIn("Hallucination", html)
+        self.assertIn('class="visual visual-funnel"', html)
+        self.assertIn("Controlled examples", html)
+
     def test_adaptive_report_plan_renders_sections_and_visuals(self):
         renderer = load_renderer()
         html = renderer.build_html(sample_adaptive_analysis(), "adaptive-clinical-ai")
@@ -199,6 +471,11 @@ class AdaptiveReportTests(unittest.TestCase):
 
         self.assertIn('class="adaptive-section section-plain_summary"', html)
         self.assertIn('class="adaptive-section section-results_interpretation"', html)
+        self.assertIn('class="section-menu"', html)
+        self.assertIn('href="#section-plain_summary"', html)
+        self.assertIn('id="section-plain_summary"', html)
+        self.assertIn('id="reading-progress-bar"', html)
+        self.assertNotIn("reading-progress-label", html)
         self.assertIn("A method paper can still render without report_plan.", html)
         self.assertNotIn("Should Not Render", html)
         self.assertNotIn("notes-card", html)

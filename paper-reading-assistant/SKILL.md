@@ -32,9 +32,10 @@ Resolve script paths relative to this skill folder. The repo root is two levels 
 3. **Classify** the paper and choose the best explanation shape.
 4. **Simplify** for a newcomer: analogy, jargon decoder, plain-language summary.
 5. **Analyze** with a skeptical lens using `references/analysis-rubric.md`.
-6. **Plan the report** in `analysis.json.report_plan`.
-7. **Render** the HTML report through `scripts/render_report.py`.
-8. **Present** the headline finding and local path.
+6. **Build the insight layer** in `analysis.json.insight_dashboard`, `evidence_profile`, `so_what`, and `opportunity_matrix`.
+7. **Plan the report** in `analysis.json.report_plan`.
+8. **Render** the HTML report through `scripts/render_report.py`.
+9. **Present** the headline finding and local path.
 
 Do not hand-write the final HTML. The renderer is the path to `report.html`.
 
@@ -153,7 +154,40 @@ Read `references/analysis-rubric.md` before drafting. Focus on novelty, load-bea
 
 ## Step 6: Build `report_plan`
 
-Add a `report_plan` object to `analysis.json`:
+Fill the insight blocks that power the early dashboard and so-what layer. The renderer shows a short paper orientation first, then these insight modules:
+
+```json
+{
+  "insight_dashboard": {
+    "cards": [
+      {"label": "Evidence base", "value": "", "caption": ""},
+      {"label": "Builder readiness", "value": "", "caption": ""}
+    ],
+    "primary_visuals": []
+  },
+  "evidence_profile": {
+    "claims": [
+      {"claim": "", "support": 0, "risk": 0, "caption": ""}
+    ]
+  },
+  "so_what": {
+    "research": {"headline": "", "implications": [], "open_questions": [], "next_actions": []},
+    "product": {"headline": "", "opportunities": [], "guardrails": [], "next_actions": []},
+    "business": {"headline": "", "market_openings": [], "adoption_blockers": [], "risks": [], "next_actions": []}
+  },
+  "opportunity_matrix": {
+    "x_axis": "Feasibility",
+    "y_axis": "Strategic value",
+    "columns": [],
+    "rows": [],
+    "cells": []
+  }
+}
+```
+
+The `so_what` block is required for new scaffolded papers. Be specific: say what a researcher, product team, and business leader should do differently after reading the paper. Do not put these implications before the reader has enough paper context to interpret them.
+
+Then add a `report_plan` object to `analysis.json`:
 
 ```json
 {
@@ -201,12 +235,23 @@ cards
 table
 flow
 bar_chart
+line_chart
 matrix
 timeline
 comparison
 heatmap
 funnel
 ```
+
+Match visuals to the paper archetype:
+
+- Survey: field map, taxonomy heatmap, maturity bar chart, opportunity matrix.
+- Method: architecture flow, novelty comparison, ablation/result bars, feasibility matrix.
+- Benchmark: evaluation setup table, score bars, leaderboard, caveat matrix.
+- Dataset: data pipeline, coverage charts, bias/risk heatmap, use-case matrix.
+- Theory: assumptions map, intuition ladder, applicability matrix.
+- Systems: architecture diagram, performance trade-off bars, adoption readiness.
+- Clinical/deployment: workflow map, evidence/safety matrix, regulatory and liability implications.
 
 Every report should usually end with:
 

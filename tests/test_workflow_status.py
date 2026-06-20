@@ -113,6 +113,24 @@ class WorkflowStatusTests(unittest.TestCase):
             self.assertEqual(result["status"], "ready-to-render")
             self.assertEqual(result["missing"], [])
 
+    def test_new_so_what_schema_requires_each_lens_when_present(self):
+        status = load_status()
+        analysis = complete_analysis()
+        analysis["so_what"] = {
+            "research": {"headline": "Research implication", "next_actions": ["Run better benchmarks"]},
+            "product": {"headline": "", "next_actions": []},
+            "business": {},
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            paper = Path(tmp) / "papers" / "needs-so-what"
+            write_paper(paper, analysis)
+
+            result = status.inspect_slug("needs-so-what", papers_dir=Path(tmp) / "papers")
+
+            self.assertEqual(result["status"], "analysis-incomplete")
+            self.assertIn("so_what.product", result["missing"])
+            self.assertIn("so_what.business", result["missing"])
+
     def test_rendered_folder_reports_rendered(self):
         status = load_status()
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,5 +1,11 @@
 import importlib.util
+import io
+import json
+import os
+import sys
+import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -139,6 +145,15 @@ def sample_adaptive_analysis():
             ],
         },
     }
+
+
+def write_temp_analysis(tmp_path: Path, analysis: dict | None = None) -> Path:
+    analysis_path = tmp_path / "analysis.json"
+    analysis_path.write_text(
+        json.dumps(analysis or sample_adaptive_analysis()),
+        encoding="utf-8",
+    )
+    return analysis_path
 
 
 class AdaptiveReportTests(unittest.TestCase):
@@ -345,6 +360,346 @@ class AdaptiveReportTests(unittest.TestCase):
         self.assertLess(context_link_idx, dashboard_link_idx)
         self.assertLess(dashboard_link_idx, so_what_link_idx)
         self.assertLess(so_what_link_idx, experiment_link_idx)
+
+    def test_render_cli_without_email_writes_report_and_does_not_use_smtp(self):
+        renderer = load_renderer()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            analysis_path = write_temp_analysis(tmp_path)
+            output_path = tmp_path / "report.html"
+            missing_env_path = tmp_path / "missing.env"
+            stdout = io.StringIO()
+
+            with mock.patch.object(sys, "argv", [
+                "render_report.py",
+                "--input", str(analysis_path),
+                "--output", str(output_path),
+                "--slug", "adaptive-clinical-ai",
+                "--env-file", str(missing_env_path),
+            ]), mock.patch("smtplib.SMTP") as smtp, mock.patch("sys.stdout", stdout):
+                result = renderer.main()
+
+            self.assertEqual(result, 0)
+            self.assertTrue(output_path.exists())
+            smtp.assert_not_called()
+            self.assertIn("Email delivery skipped", stdout.getvalue())
+            self.assertIn("REPORT_EMAIL_TO", stdout.getvalue())
+
+    def test_render_cli_with_email_sends_generated_report_attachment(self):
+        renderer = load_renderer()
+        env = {
+            "REPORT_SMTP_HOST": "smtp.example.com",
+            "REPORT_SMTP_PORT": "587",
+            "REPORT_SMTP_USERNAME": "sender@example.com",
+            "REPORT_SMTP_PASSWORD": "secret",
+            "REPORT_EMAIL_FROM": "sender@example.com",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            analysis_path = write_temp_analysis(tmp_path)
+            output_path = tmp_path / "report.html"
+
+            with mock.patch.dict(os.environ, env, clear=True), mock.patch.object(sys, "argv", [
+                "render_report.py",
+                "--input", str(analysis_path),
+                "--output", str(output_path),
+                "--slug", "adaptive-clinical-ai",
+                "--email-to", "reader@example.com",
+            ]), mock.patch("smtplib.SMTP") as smtp:
+                smtp_client = smtp.return_value.__enter__.return_value
+                smtp_client.send_message.side_effect = lambda _msg: self.assertTrue(output_path.exists())
+
+                result = renderer.main()
+
+            self.assertEqual(result, 0)
+            smtp.assert_called_once_with("smtp.example.com", 587, timeout=30)
+            smtp_client.starttls.assert_called_once()
+            smtp_client.login.assert_called_once_with("sender@example.com", "secret")
+            smtp_client.send_message.assert_called_once()
+            message = smtp_client.send_message.call_args.args[0]
+            self.assertEqual(message["To"], "reader@example.com")
+            self.assertEqual(message["From"], "sender@example.com")
+            self.assertEqual(message["Subject"], "Paper report: Adaptive Clinical AI")
+            body = message.get_body(preferencelist=("plain",)).get_content()
+            self.assertIn("Attached is the generated research paper report.", body)
+            self.assertIn("Title: Adaptive Clinical AI", body)
+            self.assertIn("Report file: report.html", body)
+            attachments = list(message.iter_attachments())
+            self.assertEqual(len(attachments), 1)
+            self.assertEqual(attachments[0].get_filename(), "report.html")
+            self.assertEqual(attachments[0].get_content_type(), "text/html")
+            self.assertIn("<!DOCTYPE html>", attachments[0].get_content())
+
+    def test_render_cli_with_email_uses_structured_config_env_names(self):
+        renderer = load_renderer()
+        env = {
+            "MAIL_HOST": "smtp.custom.example",
+            "MAIL_PORT": "2525",
+            "MAIL_USERNAME": "custom-sender@example.com",
+            "MAIL_PASSWORD": "custom-secret",
+            "MAIL_FROM": "custom-sender@example.com",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            analysis_path = write_temp_analysis(tmp_path)
+            output_path = tmp_path / "report.html"
+            config_path = tmp_path / "config.json"
+            config_path.write_text(json.dumps({
+                "email": {
+                    "smtp": {
+                        "host_env": "MAIL_HOST",
+                        "port_env": "MAIL_PORT",
+                        "default_port": 2525,
+                        "username_env": "MAIL_USERNAME",
+                        "password_env": "MAIL_PASSWORD",
+                        "from_env": "MAIL_FROM",
+                        "starttls_ports": [2525],
+                    }
+                }
+            }), encoding="utf-8")
+
+            with mock.patch.dict(os.environ, env, clear=True), mock.patch.object(sys, "argv", [
+                "render_report.py",
+                "--input", str(analysis_path),
+                "--output", str(output_path),
+                "--slug", "adaptive-clinical-ai",
+                "--email-to", "reader@example.com",
+                "--config", str(config_path),
+            ]), mock.patch("smtplib.SMTP") as smtp:
+                smtp_client = smtp.return_value.__enter__.return_value
+
+                result = renderer.main()
+
+        self.assertEqual(result, 0)
+        smtp.assert_called_once_with("smtp.custom.example", 2525, timeout=30)
+        smtp_client.starttls.assert_called_once()
+        smtp_client.login.assert_called_once_with("custom-sender@example.com", "custom-secret")
+        message = smtp_client.send_message.call_args.args[0]
+        self.assertEqual(message["From"], "custom-sender@example.com")
+        self.assertEqual(message["To"], "reader@example.com")
+
+    def test_render_cli_with_email_uses_gmail_provider_defaults_from_config(self):
+        renderer = load_renderer()
+        env = {
+            "REPORT_SMTP_USERNAME": "sender@gmail.com",
+            "REPORT_SMTP_PASSWORD": "google-app-password",
+            "REPORT_EMAIL_FROM": "sender@gmail.com",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            analysis_path = write_temp_analysis(tmp_path)
+            output_path = tmp_path / "report.html"
+
+            with mock.patch.dict(os.environ, env, clear=True), mock.patch.object(sys, "argv", [
+                "render_report.py",
+                "--input", str(analysis_path),
+                "--output", str(output_path),
+                "--slug", "adaptive-clinical-ai",
+                "--email-to", "reader@example.com",
+            ]), mock.patch("smtplib.SMTP") as smtp:
+                smtp_client = smtp.return_value.__enter__.return_value
+
+                result = renderer.main()
+
+        self.assertEqual(result, 0)
+        smtp.assert_called_once_with("smtp.gmail.com", 587, timeout=30)
+        smtp_client.starttls.assert_called_once()
+        smtp_client.login.assert_called_once_with("sender@gmail.com", "google-app-password")
+
+    def test_render_cli_with_email_loads_missing_values_from_dotenv(self):
+        renderer = load_renderer()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            analysis_path = write_temp_analysis(tmp_path)
+            output_path = tmp_path / "report.html"
+            dotenv_path = tmp_path / ".env"
+            dotenv_path.write_text("\n".join([
+                "REPORT_SMTP_USERNAME=dotenv-sender@gmail.com",
+                "REPORT_SMTP_PASSWORD='dotenv app password'",
+                "REPORT_EMAIL_FROM=dotenv-sender@gmail.com",
+                "REPORT_SMTP_PORT=587",
+            ]), encoding="utf-8")
+            stdout = io.StringIO()
+
+            with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(sys, "argv", [
+                "render_report.py",
+                "--input", str(analysis_path),
+                "--output", str(output_path),
+                "--slug", "adaptive-clinical-ai",
+                "--email-to", "reader@example.com",
+                "--env-file", str(dotenv_path),
+            ]), mock.patch("smtplib.SMTP") as smtp, mock.patch("sys.stdout", stdout):
+                smtp_client = smtp.return_value.__enter__.return_value
+
+                result = renderer.main()
+
+        self.assertEqual(result, 0)
+        smtp.assert_called_once_with("smtp.gmail.com", 587, timeout=30)
+        smtp_client.login.assert_called_once_with("dotenv-sender@gmail.com", "dotenv app password")
+        self.assertIn("Loaded local env file", stdout.getvalue())
+        self.assertIn("Email delivery configured", stdout.getvalue())
+
+    def test_render_cli_uses_dotenv_default_recipient_when_email_to_omitted(self):
+        renderer = load_renderer()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            analysis_path = write_temp_analysis(tmp_path)
+            output_path = tmp_path / "report.html"
+            dotenv_path = tmp_path / ".env"
+            dotenv_path.write_text("\n".join([
+                "REPORT_SMTP_USERNAME=sender@gmail.com",
+                "REPORT_SMTP_PASSWORD=google-app-password",
+                "REPORT_EMAIL_FROM=sender@gmail.com",
+                "REPORT_EMAIL_TO=sender@gmail.com",
+            ]), encoding="utf-8")
+
+            with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(sys, "argv", [
+                "render_report.py",
+                "--input", str(analysis_path),
+                "--output", str(output_path),
+                "--slug", "adaptive-clinical-ai",
+                "--env-file", str(dotenv_path),
+            ]), mock.patch("smtplib.SMTP") as smtp:
+                result = renderer.main()
+
+        self.assertEqual(result, 0)
+        message = smtp.return_value.__enter__.return_value.send_message.call_args.args[0]
+        self.assertEqual(message["To"], "sender@gmail.com")
+
+    def test_render_cli_skips_blank_dotenv_default_recipient(self):
+        renderer = load_renderer()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            analysis_path = write_temp_analysis(tmp_path)
+            output_path = tmp_path / "report.html"
+            dotenv_path = tmp_path / ".env"
+            dotenv_path.write_text("\n".join([
+                "REPORT_SMTP_USERNAME=sender@gmail.com",
+                "REPORT_SMTP_PASSWORD=google-app-password",
+                "REPORT_EMAIL_FROM=sender@gmail.com",
+                "REPORT_EMAIL_TO=   ",
+            ]), encoding="utf-8")
+            stdout = io.StringIO()
+
+            with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(sys, "argv", [
+                "render_report.py",
+                "--input", str(analysis_path),
+                "--output", str(output_path),
+                "--slug", "adaptive-clinical-ai",
+                "--env-file", str(dotenv_path),
+            ]), mock.patch("smtplib.SMTP") as smtp, mock.patch("sys.stdout", stdout):
+                result = renderer.main()
+
+            self.assertEqual(result, 0)
+            self.assertTrue(output_path.exists())
+            smtp.assert_not_called()
+            self.assertIn("Email delivery skipped", stdout.getvalue())
+            self.assertIn("REPORT_EMAIL_TO is blank", stdout.getvalue())
+
+    def test_render_cli_email_to_overrides_dotenv_default_recipient(self):
+        renderer = load_renderer()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            analysis_path = write_temp_analysis(tmp_path)
+            output_path = tmp_path / "report.html"
+            dotenv_path = tmp_path / ".env"
+            dotenv_path.write_text("\n".join([
+                "REPORT_SMTP_USERNAME=sender@gmail.com",
+                "REPORT_SMTP_PASSWORD=google-app-password",
+                "REPORT_EMAIL_FROM=sender@gmail.com",
+                "REPORT_EMAIL_TO=default-reader@example.com",
+            ]), encoding="utf-8")
+
+            with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(sys, "argv", [
+                "render_report.py",
+                "--input", str(analysis_path),
+                "--output", str(output_path),
+                "--slug", "adaptive-clinical-ai",
+                "--email-to", "override-reader@example.com",
+                "--env-file", str(dotenv_path),
+            ]), mock.patch("smtplib.SMTP") as smtp:
+                result = renderer.main()
+
+        self.assertEqual(result, 0)
+        message = smtp.return_value.__enter__.return_value.send_message.call_args.args[0]
+        self.assertEqual(message["To"], "override-reader@example.com")
+
+    def test_dotenv_loader_does_not_override_existing_environment_values(self):
+        renderer = load_renderer()
+        with tempfile.TemporaryDirectory() as tmp:
+            dotenv_path = Path(tmp) / ".env"
+            dotenv_path.write_text("\n".join([
+                "REPORT_SMTP_USERNAME=dotenv-sender@gmail.com",
+                "REPORT_SMTP_PASSWORD=dotenv-password",
+                "REPORT_EMAIL_FROM=dotenv-sender@gmail.com",
+            ]), encoding="utf-8")
+            environ = {
+                "REPORT_SMTP_USERNAME": "existing-sender@gmail.com",
+                "REPORT_SMTP_PASSWORD": "existing-password",
+            }
+
+            renderer.load_dotenv(dotenv_path, environ=environ)
+
+        self.assertEqual(environ["REPORT_SMTP_USERNAME"], "existing-sender@gmail.com")
+        self.assertEqual(environ["REPORT_SMTP_PASSWORD"], "existing-password")
+        self.assertEqual(environ["REPORT_EMAIL_FROM"], "dotenv-sender@gmail.com")
+
+    def test_render_cli_with_email_missing_config_keeps_report_and_returns_error(self):
+        renderer = load_renderer()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            analysis_path = write_temp_analysis(tmp_path)
+            output_path = tmp_path / "report.html"
+            missing_env_path = tmp_path / "missing.env"
+            stderr = io.StringIO()
+
+            with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(sys, "argv", [
+                "render_report.py",
+                "--input", str(analysis_path),
+                "--output", str(output_path),
+                "--slug", "adaptive-clinical-ai",
+                "--email-to", "reader@example.com",
+                "--env-file", str(missing_env_path),
+            ]), mock.patch("smtplib.SMTP") as smtp, mock.patch("sys.stderr", stderr):
+                result = renderer.main()
+
+            self.assertEqual(result, 1)
+            self.assertTrue(output_path.exists())
+            smtp.assert_not_called()
+            self.assertIn("Missing email configuration", stderr.getvalue())
+            self.assertIn("REPORT_SMTP_USERNAME", stderr.getvalue())
+
+    def test_render_cli_with_email_smtp_failure_keeps_report_and_returns_error(self):
+        renderer = load_renderer()
+        env = {
+            "REPORT_SMTP_HOST": "smtp.example.com",
+            "REPORT_SMTP_PORT": "587",
+            "REPORT_SMTP_USERNAME": "sender@example.com",
+            "REPORT_SMTP_PASSWORD": "secret",
+            "REPORT_EMAIL_FROM": "sender@example.com",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            analysis_path = write_temp_analysis(tmp_path)
+            output_path = tmp_path / "report.html"
+            stderr = io.StringIO()
+
+            with mock.patch.dict(os.environ, env, clear=True), mock.patch.object(sys, "argv", [
+                "render_report.py",
+                "--input", str(analysis_path),
+                "--output", str(output_path),
+                "--slug", "adaptive-clinical-ai",
+                "--email-to", "reader@example.com",
+            ]), mock.patch("smtplib.SMTP") as smtp, mock.patch("sys.stderr", stderr):
+                smtp_client = smtp.return_value.__enter__.return_value
+                smtp_client.send_message.side_effect = RuntimeError("smtp down")
+
+                result = renderer.main()
+
+            self.assertEqual(result, 1)
+            self.assertTrue(output_path.exists())
+            self.assertIn("Email send failed", stderr.getvalue())
+            self.assertIn("smtp down", stderr.getvalue())
 
     def test_visual_aliases_render_instead_of_disappearing(self):
         renderer = load_renderer()

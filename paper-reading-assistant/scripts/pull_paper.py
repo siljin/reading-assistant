@@ -20,22 +20,30 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from report_config import DEFAULT_CONFIG_PATH, load_app_config, score_weights, selection_defaults, source_settings
+
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PAPERS_DIR = REPO_ROOT / "papers"
 LEDGER_NAME = ".pulled.json"
-OPENALEX_WORKS_URL = "https://api.openalex.org/works"
-DAIR_README_URL = "https://raw.githubusercontent.com/dair-ai/AI-Papers-of-the-Week/main/README.md"
-DAIR_RAW_BASE = "https://raw.githubusercontent.com/dair-ai/AI-Papers-of-the-Week/main"
-CURATED_SOURCE_LABELS = {
-    "dair-ai-weekly": "DAIR AI Papers of the Week",
-}
-RELEVANCE_POINTS = 35.0
-CITATION_POINTS = 17.0
-RECENCY_POINTS = 18.0
-CURATED_POPULARITY_POINTS = 10.0
-SOURCE_CREDIBILITY_POINTS = 8.0
-ACCESSIBILITY_POINTS = 7.0
-NOVELTY_DIVERSITY_POINTS = 5.0
+APP_CONFIG = load_app_config()
+SOURCE_SETTINGS = source_settings(APP_CONFIG)
+SCORE_WEIGHTS = score_weights(APP_CONFIG)
+OPENALEX_WORKS_URL = SOURCE_SETTINGS["openalex_works_url"]
+DAIR_README_URL = SOURCE_SETTINGS["dair_readme_url"]
+DAIR_RAW_BASE = SOURCE_SETTINGS["dair_raw_base"]
+CURATED_SOURCE_LABELS = SOURCE_SETTINGS["curated_source_labels"]
+RELEVANCE_POINTS = SCORE_WEIGHTS["relevance"]
+CITATION_POINTS = SCORE_WEIGHTS["citation_signal"]
+RECENCY_POINTS = SCORE_WEIGHTS["recency_trend"]
+CURATED_POPULARITY_POINTS = SCORE_WEIGHTS["curated_popularity"]
+SOURCE_CREDIBILITY_POINTS = SCORE_WEIGHTS["source_credibility"]
+ACCESSIBILITY_POINTS = SCORE_WEIGHTS["accessibility"]
+NOVELTY_DIVERSITY_POINTS = SCORE_WEIGHTS["novelty_diversity"]
 
 
 class ScoredPaper:
@@ -57,7 +65,28 @@ def slugify(text: str) -> str:
     return slug[:60] or "paper"
 
 
-def normalize_profile(profile: dict) -> dict:
+def configured_value(profile: dict, defaults: dict, key: str, fallback=None):
+    if key in profile and profile.get(key) is not None:
+        return profile[key]
+    return defaults.get(key, fallback)
+
+
+def profile_weight(profile: dict | None, key: str) -> float:
+    weights = (profile or {}).get("_score_weights") or SCORE_WEIGHTS
+    return float(weights.get(key, SCORE_WEIGHTS[key]))
+
+
+def profile_sources(profile: dict | None) -> dict:
+    return (profile or {}).get("_source_settings") or SOURCE_SETTINGS
+
+
+def profile_curated_source_labels(profile: dict | None) -> dict:
+    return profile_sources(profile).get("curated_source_labels") or CURATED_SOURCE_LABELS
+
+
+def normalize_profile(profile: dict, config: dict | None = None) -> dict:
+    config = config or APP_CONFIG
+    defaults = selection_defaults(config)
     return {
         "name": profile.get("name") or "default",
         "keywords": list(profile.get("keywords") or []),
@@ -65,16 +94,18 @@ def normalize_profile(profile: dict) -> dict:
         "arxiv_categories": list(profile.get("arxiv_categories") or []),
         "must_include": list(profile.get("must_include") or []),
         "must_exclude": list(profile.get("must_exclude") or []),
-        "recency_days": int(profile.get("recency_days") or 730),
-        "min_year": profile.get("min_year"),
-        "max_results_to_score": int(profile.get("max_results_to_score") or 50),
-        "curated_sources": list(profile.get("curated_sources") or []),
-        "curated_max_weeks": int(profile.get("curated_max_weeks") or 8),
+        "recency_days": int(configured_value(profile, defaults, "recency_days", 730)),
+        "min_year": configured_value(profile, defaults, "min_year"),
+        "max_results_to_score": int(configured_value(profile, defaults, "max_results_to_score", 50)),
+        "curated_sources": list(configured_value(profile, defaults, "curated_sources", []) or []),
+        "curated_max_weeks": int(configured_value(profile, defaults, "curated_max_weeks", 8)),
+        "_score_weights": score_weights(config),
+        "_source_settings": source_settings(config),
     }
 
 
-def load_profile(path: Path) -> dict:
-    return normalize_profile(json.loads(path.read_text(encoding="utf-8")))
+def load_profile(path: Path, config: dict | None = None) -> dict:
+    return normalize_profile(json.loads(path.read_text(encoding="utf-8")), config=config)
 
 
 def abstract_from_inverted_index(index: dict | None) -> str:
@@ -161,7 +192,8 @@ def fetch_openalex_candidates(profile: dict) -> list[dict]:
     if filters:
         params["filter"] = ",".join(filters)
 
-    url = f"{OPENALEX_WORKS_URL}?{urlencode(params)}"
+    works_url = profile_sources(profile).get("openalex_works_url") or OPENALEX_WORKS_URL
+    url = f"{works_url}?{urlencode(params)}"
     req = Request(url, headers={"User-Agent": "reading-assistant/0.1 (mailto:example@example.com)"})
     with urlopen(req, timeout=30) as response:
         data = json.loads(response.read().decode("utf-8"))
@@ -229,7 +261,9 @@ def parse_dair_year_markdown(markdown: str, max_weeks: int = 8) -> list[dict]:
     return entries
 
 
-def dair_year_urls_from_index(markdown: str) -> list[str]:
+def dair_year_urls_from_index(markdown: str, settings: dict | None = None) -> list[str]:
+    settings = settings or SOURCE_SETTINGS
+    raw_base = settings.get("dair_raw_base") or DAIR_RAW_BASE
     years = []
     for match in re.finditer(r"years/(\d{4})\.md", markdown):
         year = match.group(1)
@@ -237,17 +271,18 @@ def dair_year_urls_from_index(markdown: str) -> list[str]:
             years.append(year)
     if not years:
         years = [str(date.today().year)]
-    return [f"{DAIR_RAW_BASE}/years/{year}.md" for year in years]
+    return [f"{raw_base}/years/{year}.md" for year in years]
 
 
 def fetch_dair_curated_entries(profile: dict) -> list[dict]:
     if "dair-ai-weekly" not in profile.get("curated_sources", []):
         return []
     max_weeks = max(1, int(profile.get("curated_max_weeks") or 8))
-    index_markdown = fetch_text(DAIR_README_URL)
+    settings = profile_sources(profile)
+    index_markdown = fetch_text(settings.get("dair_readme_url") or DAIR_README_URL)
     entries = []
     weeks_remaining = max_weeks
-    for year_url in dair_year_urls_from_index(index_markdown):
+    for year_url in dair_year_urls_from_index(index_markdown, settings):
         if weeks_remaining <= 0:
             break
         year_entries = parse_dair_year_markdown(fetch_text(year_url), max_weeks=weeks_remaining)
@@ -419,38 +454,42 @@ def score_relevance(candidate: dict, profile: dict) -> float:
         if category.lower() in arxiv_text:
             score += 6
 
-    return min(RELEVANCE_POINTS, score)
+    return min(profile_weight(profile, "relevance"), score)
 
 
-def score_citations(candidate: dict, today: date) -> float:
+def score_citations(candidate: dict, today: date, profile: dict | None = None) -> float:
+    points = profile_weight(profile, "citation_signal")
     pub_date = parse_date(candidate.get("publication_date"), candidate.get("publication_year")) or today
     age_years = max((today - pub_date).days / 365.25, 0.25)
     annualized = float(candidate.get("cited_by_count") or 0) / age_years
-    return min(CITATION_POINTS, math.log1p(annualized) / math.log1p(250) * CITATION_POINTS)
+    return min(points, math.log1p(annualized) / math.log1p(250) * points)
 
 
 def score_recency(candidate: dict, profile: dict, today: date) -> float:
+    points = profile_weight(profile, "recency_trend")
     pub_date = parse_date(candidate.get("publication_date"), candidate.get("publication_year"))
     if not pub_date:
         return 0.0
     age_days = max((today - pub_date).days, 0)
     window = max(int(profile["recency_days"]), 1)
     if age_days > window:
-        return max(0.0, RECENCY_POINTS * (window / age_days) * 0.25)
-    return RECENCY_POINTS * (1 - (age_days / window) * 0.5)
+        return max(0.0, points * (window / age_days) * 0.25)
+    return points * (1 - (age_days / window) * 0.5)
 
 
-def score_source(candidate: dict) -> float:
+def score_source(candidate: dict, profile: dict | None = None) -> float:
+    points = profile_weight(profile, "source_credibility")
     url = source_url(candidate).lower()
     source_name = (((candidate.get("primary_location") or {}).get("source") or {}).get("display_name") or "").lower()
     if "arxiv.org" in url or "arxiv" in source_name:
-        return SOURCE_CREDIBILITY_POINTS
+        return points
     if source_name:
-        return 6.0
-    return 3.0
+        return points * 0.75
+    return points * 0.375
 
 
-def score_accessibility(candidate: dict) -> float:
+def score_accessibility(candidate: dict, profile: dict | None = None) -> float:
+    points = profile_weight(profile, "accessibility")
     score = 0.0
     if source_url(candidate):
         score += 2
@@ -460,10 +499,11 @@ def score_accessibility(candidate: dict) -> float:
         score += 2
     if candidate.get("abstract"):
         score += 1
-    return min(ACCESSIBILITY_POINTS, score)
+    return min(points, (score / 7.0) * points)
 
 
-def score_curated_popularity(candidate: dict) -> float:
+def score_curated_popularity(candidate: dict, profile: dict | None = None) -> float:
+    points = profile_weight(profile, "curated_popularity")
     matches = candidate.get("curated_matches") or []
     if not matches:
         return 0.0
@@ -471,19 +511,20 @@ def score_curated_popularity(candidate: dict) -> float:
     for match in matches:
         rank = match.get("rank")
         if rank is None:
-            scores.append(6.0)
+            scores.append(points * 0.6)
         elif int(rank) <= 5:
-            scores.append(CURATED_POPULARITY_POINTS)
+            scores.append(points)
         elif int(rank) <= 10:
-            scores.append(8.0)
+            scores.append(points * 0.8)
         else:
-            scores.append(6.0)
+            scores.append(points * 0.6)
     return max(scores)
 
 
-def score_novelty(candidate: dict, papers_dir: Path | None = None) -> float:
+def score_novelty(candidate: dict, papers_dir: Path | None = None, profile: dict | None = None) -> float:
+    points = profile_weight(profile, "novelty_diversity")
     if not papers_dir or not papers_dir.exists():
-        return NOVELTY_DIVERSITY_POINTS
+        return points
     title_words = set(re.findall(r"[a-z0-9]+", str(candidate.get("title") or "").lower()))
     if not title_words:
         return 0.0
@@ -496,18 +537,18 @@ def score_novelty(candidate: dict, papers_dir: Path | None = None) -> float:
         existing_words = set(re.findall(r"[a-z0-9]+", existing_title))
         if existing_words and len(title_words & existing_words) / len(title_words | existing_words) > 0.55:
             return 0.0
-    return NOVELTY_DIVERSITY_POINTS
+    return points
 
 
 def score_candidate(candidate: dict, profile: dict, today: date, papers_dir: Path | None = None) -> ScoredPaper:
     breakdown = {
         "relevance": round(score_relevance(candidate, profile), 2),
-        "citation_signal": round(score_citations(candidate, today), 2),
+        "citation_signal": round(score_citations(candidate, today, profile), 2),
         "recency_trend": round(score_recency(candidate, profile, today), 2),
-        "curated_popularity": round(score_curated_popularity(candidate), 2),
-        "source_credibility": round(score_source(candidate), 2),
-        "accessibility": round(score_accessibility(candidate), 2),
-        "novelty_diversity": round(score_novelty(candidate, papers_dir), 2),
+        "curated_popularity": round(score_curated_popularity(candidate, profile), 2),
+        "source_credibility": round(score_source(candidate, profile), 2),
+        "accessibility": round(score_accessibility(candidate, profile), 2),
+        "novelty_diversity": round(score_novelty(candidate, papers_dir, profile), 2),
     }
     total = round(sum(breakdown.values()), 2)
     return ScoredPaper(candidate, total, breakdown)
@@ -696,7 +737,8 @@ def source_markdown(candidate: dict, profile: dict, scored: ScoredPaper, selecte
     curated_matches = candidate.get("curated_matches") or []
     if curated_matches:
         match = curated_matches[0]
-        label = CURATED_SOURCE_LABELS.get(match.get("source"), match.get("source") or "Curated source")
+        labels = profile_curated_source_labels(profile)
+        label = labels.get(match.get("source"), match.get("source") or "Curated source")
         lines += [
             f"- Curated source: {label}",
             f"- DAIR issue: {match.get('issue_title') or ''}",
@@ -790,7 +832,8 @@ def dry_run_message(scored: ScoredPaper, profile: dict) -> str:
     curated_matches = candidate.get("curated_matches") or []
     if curated_matches:
         match = curated_matches[0]
-        label = CURATED_SOURCE_LABELS.get(match.get("source"), match.get("source") or "Curated source")
+        labels = profile_curated_source_labels(profile)
+        label = labels.get(match.get("source"), match.get("source") or "Curated source")
         parts += [
             "  Curated evidence:",
             f"    - Curated source: {label}",
@@ -808,9 +851,11 @@ def run_pull(
     curated_fetcher=fetch_curated_entries,
     today: date | None = None,
     dry_run: bool = False,
+    config_path: Path | None = None,
 ) -> PullResult:
     today = today or date.today()
-    profile = load_profile(profile_path)
+    config = load_app_config(config_path)
+    profile = load_profile(profile_path, config=config)
     ledger = load_ledger(papers_dir)
     candidates = fetcher(profile)
     curated_warning = ""
@@ -869,10 +914,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Select one research paper for a topic profile.")
     parser.add_argument("--profile", required=True, type=Path)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--config", default=DEFAULT_CONFIG_PATH, type=Path, help="Path to structured generator config JSON")
     args = parser.parse_args()
 
     try:
-        result = run_pull(args.profile, dry_run=args.dry_run)
+        result = run_pull(args.profile, dry_run=args.dry_run, config_path=args.config)
     except Exception as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

@@ -1,7 +1,9 @@
 import importlib.util
 import json
+import sys
 import tempfile
 import unittest
+from unittest import mock
 from datetime import date
 from pathlib import Path
 
@@ -54,6 +56,121 @@ def candidate(
 
 
 class PullPaperTests(unittest.TestCase):
+    def test_local_env_files_are_gitignored(self):
+        gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+
+        self.assertIn(".env", gitignore)
+        self.assertIn(".env.*", gitignore)
+
+    def test_checked_in_config_file_has_structured_selection_and_email_settings(self):
+        puller = load_puller()
+        config = puller.load_app_config()
+
+        self.assertIn("selection", config)
+        self.assertIn("defaults", config["selection"])
+        self.assertIn("score_weights", config["selection"])
+        self.assertEqual(config["selection"]["defaults"]["recency_days"], 730)
+        self.assertEqual(config["selection"]["defaults"]["max_results_to_score"], 50)
+        self.assertEqual(config["selection"]["score_weights"]["recency_trend"], 18)
+        self.assertIn("sources", config)
+        self.assertEqual(config["sources"]["curated_source_labels"]["dair-ai-weekly"], "DAIR AI Papers of the Week")
+        self.assertEqual(config["email"]["provider"], "gmail")
+        self.assertEqual(config["email"]["providers"]["gmail"]["host"], "smtp.gmail.com")
+        self.assertEqual(config["email"]["providers"]["gmail"]["username_placeholder"], "your-gmail-address@gmail.com")
+        self.assertEqual(config["email"]["providers"]["gmail"]["password_placeholder"], "your-google-app-password")
+        self.assertEqual(config["email"]["providers"]["gmail"]["email_from_placeholder"], "your-gmail-address@gmail.com")
+        self.assertEqual(config["email"]["providers"]["gmail"]["email_to_placeholder"], "your-delivery-email@example.com")
+        self.assertEqual(config["email"]["smtp"]["host_env"], "REPORT_SMTP_HOST")
+
+    def test_profile_defaults_and_score_weights_come_from_structured_config(self):
+        puller = load_puller()
+        with tempfile.TemporaryDirectory() as tmp:
+            config_path = Path(tmp) / "config.json"
+            config_path.write_text(json.dumps({
+                "selection": {
+                    "defaults": {
+                        "recency_days": 90,
+                        "max_results_to_score": 7,
+                        "curated_max_weeks": 3,
+                    },
+                    "score_weights": {
+                        "recency_trend": 41,
+                    },
+                }
+            }), encoding="utf-8")
+
+            config = puller.load_app_config(config_path)
+            profile = puller.normalize_profile({"name": "custom", "keywords": ["diagnosis"]}, config=config)
+            scored = puller.score_candidate(
+                candidate("Fresh Diagnosis Paper", abstract="diagnosis", publication_date="2026-06-19"),
+                profile,
+                date(2026, 6, 19),
+            )
+
+        self.assertEqual(profile["recency_days"], 90)
+        self.assertEqual(profile["max_results_to_score"], 7)
+        self.assertEqual(profile["curated_max_weeks"], 3)
+        self.assertEqual(scored.breakdown["recency_trend"], 41.0)
+
+    def test_run_pull_accepts_config_path_for_domain_defaults(self):
+        puller = load_puller()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            config_path = tmp_path / "config.json"
+            config_path.write_text(json.dumps({
+                "selection": {
+                    "defaults": {
+                        "recency_days": 120,
+                        "max_results_to_score": 9,
+                        "curated_max_weeks": 4,
+                    }
+                }
+            }), encoding="utf-8")
+            profile_path = tmp_path / "profile.json"
+            profile_path.write_text(json.dumps({
+                "name": "medical-ai",
+                "keywords": ["medical diagnosis"],
+            }), encoding="utf-8")
+            seen_profile = {}
+
+            def fetcher(profile):
+                seen_profile.update(profile)
+                return [candidate("Medical Diagnosis With Retrieval")]
+
+            result = puller.run_pull(
+                profile_path,
+                papers_dir=tmp_path / "papers",
+                fetcher=fetcher,
+                today=date(2026, 6, 19),
+                dry_run=True,
+                config_path=config_path,
+            )
+
+        self.assertIn("Selected paper", result.message)
+        self.assertEqual(seen_profile["recency_days"], 120)
+        self.assertEqual(seen_profile["max_results_to_score"], 9)
+        self.assertEqual(seen_profile["curated_max_weeks"], 4)
+
+    def test_pull_cli_accepts_config_flag(self):
+        puller = load_puller()
+        profile_path = Path("profiles/medical-ai.json")
+        config_path = Path("paper-reading-assistant/config.json")
+
+        with mock.patch.object(sys, "argv", [
+            "pull_paper.py",
+            "--profile", str(profile_path),
+            "--dry-run",
+            "--config", str(config_path),
+        ]), mock.patch.object(
+            puller,
+            "run_pull",
+            return_value=puller.PullResult({"title": "Paper"}, "Selected paper"),
+        ) as run_pull:
+            result = puller.main()
+
+        self.assertEqual(result, 0)
+        self.assertEqual(run_pull.call_args.kwargs["config_path"], config_path)
+
     def test_checked_in_profiles_match_expected_schema(self):
         puller = load_puller()
         profiles = sorted(PROFILES_DIR.glob("*.json"))

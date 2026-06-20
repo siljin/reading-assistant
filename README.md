@@ -10,6 +10,11 @@ paper -> analysis.json -> adaptive report_plan -> renderer -> report.html
 
 Everything for a paper lives in the repo under `papers/<slug>/`, so the source pointer, structured analysis, insight dashboard, so-what layer, and generated artifact are easy to review and diff.
 
+Shared generator settings live in `paper-reading-assistant/config.json`. Topic
+profiles in `profiles/*.json` stay paper/domain-specific and can override the
+shared defaults when a domain needs different recency, filtering, or curated
+source behavior.
+
 ---
 
 ## What you get per paper
@@ -58,6 +63,28 @@ python paper-reading-assistant/scripts/render_report.py \
   --slug <slug>
 ```
 
+Optional email delivery after a successful render:
+
+Create a local `.env` file in the repo root. It is gitignored.
+
+```bash
+REPORT_SMTP_USERNAME=your-gmail-address@gmail.com
+REPORT_SMTP_PASSWORD=your-google-app-password
+REPORT_EMAIL_FROM=your-gmail-address@gmail.com
+REPORT_EMAIL_TO=your-gmail-address@gmail.com
+```
+
+Then render:
+
+```bash
+python paper-reading-assistant/scripts/render_report.py \
+  --input papers/<slug>/analysis.json \
+  --output papers/<slug>/report.html \
+  --slug <slug>
+```
+
+Email delivery sends `report.html` as an attachment when either `REPORT_EMAIL_TO` is set or `--email-to recipient@example.com` is provided. `--email-to` overrides the default recipient for one-off sends. Gmail SMTP host/port and placeholders are configured in `paper-reading-assistant/config.json`; secret values stay in `.env` or environment variables. The renderer auto-loads `.env` without overriding environment variables already set by the shell or automation. Use `--env-file path/to/.env` if an automation needs a different local secrets file. If email configuration or SMTP sending fails, the local report remains generated and the command exits with a clear email error.
+
 Automatic pull:
 
 ```bash
@@ -65,7 +92,7 @@ python paper-reading-assistant/scripts/pull_paper.py --profile profiles/medical-
 python paper-reading-assistant/scripts/pull_paper.py --profile profiles/medical-ai.json
 ```
 
-The puller selects exactly one eligible paper per run using OpenAlex metadata, writes `source.md` and starter `analysis.json`, and records the selected paper in `papers/.pulled.json` so recurring runs do not pick the same paper again. Profiles can optionally add curated trend signals, currently `dair-ai-weekly` from DAIR.AI's AI Papers of the Week, but OpenAlex remains the primary discovery source. It does not download PDFs or call an LLM API; report completion remains agent-assisted.
+Use `--config path/to/config.json` on `pull_paper.py` or `render_report.py` to test a different structured config. The puller selects exactly one eligible paper per run using OpenAlex metadata, writes `source.md` and starter `analysis.json`, and records the selected paper in `papers/.pulled.json` so recurring runs do not pick the same paper again. Profiles can optionally add curated trend signals, currently `dair-ai-weekly` from DAIR.AI's AI Papers of the Week, but OpenAlex remains the primary discovery source. It does not download PDFs or call an LLM API; report completion remains agent-assisted.
 
 Agent-orchestrated end-to-end flow:
 
@@ -181,6 +208,10 @@ Selection score is out of 100:
 - Source credibility: 8
 - Accessibility: 7
 - Novelty/diversity: 5
+
+These defaults come from `paper-reading-assistant/config.json`. Profiles should
+only carry topic adaptation such as keywords, OpenAlex topics, arXiv categories,
+hard include/exclude rules, and any domain-specific overrides.
 
 ---
 

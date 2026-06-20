@@ -86,9 +86,20 @@ briefing generated from the structured analysis.
 import argparse
 import html
 import json
+import mimetypes
+import os
 import re
+import smtplib
 import sys
+from email.message import EmailMessage
 from pathlib import Path
+
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from report_config import DEFAULT_CONFIG_PATH, email_smtp_settings, load_app_config
 
 
 def esc(value) -> str:
@@ -980,6 +991,130 @@ def build_html(analysis: dict, slug: str) -> str:
     return "\n".join(line.rstrip() for line in html_text.splitlines()) + "\n"
 
 
+class EmailConfigError(ValueError):
+    pass
+
+
+def parse_dotenv_value(value: str) -> str:
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        value = value[1:-1]
+    return value
+
+
+def load_dotenv(path: Path, environ: dict | None = None) -> None:
+    if environ is None:
+        environ = os.environ
+    if not path.exists():
+        return
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        if not key or key in environ:
+            continue
+        environ[key] = parse_dotenv_value(value)
+
+
+def env_file_status(path: Path) -> str:
+    if path.exists():
+        return f"Loaded local env file: {path}"
+    return f"Local env file not found: {path}"
+
+
+def email_config_from_env(environ: dict | None = None, config: dict | None = None) -> dict:
+    if environ is None:
+        environ = os.environ
+    config = config or load_app_config()
+    smtp_settings = email_smtp_settings(config)
+    provider_name = (config.get("email") or {}).get("provider")
+    provider_settings = ((config.get("email") or {}).get("providers") or {}).get(provider_name, {})
+    host_env = smtp_settings.get("host_env", "REPORT_SMTP_HOST")
+    port_env = smtp_settings.get("port_env", "REPORT_SMTP_PORT")
+    username_env = smtp_settings.get("username_env", "REPORT_SMTP_USERNAME")
+    password_env = smtp_settings.get("password_env", "REPORT_SMTP_PASSWORD")
+    from_env = smtp_settings.get("from_env", "REPORT_EMAIL_FROM")
+    default_host = smtp_settings.get("default_host") or provider_settings.get("host")
+    required_email_env = (username_env, password_env, from_env)
+    if not default_host:
+        required_email_env = (host_env, *required_email_env)
+    missing = [key for key in required_email_env if not environ.get(key)]
+    if missing:
+        raise EmailConfigError("Missing email configuration: " + ", ".join(missing))
+    try:
+        port = int(environ.get(port_env) or provider_settings.get("port") or smtp_settings.get("default_port", 587))
+    except ValueError as exc:
+        raise EmailConfigError(f"{port_env} must be an integer.") from exc
+    starttls_ports = smtp_settings.get("starttls_ports") or provider_settings.get("starttls_ports", [587])
+    return {
+        "host": environ.get(host_env) or default_host,
+        "port": port,
+        "username": environ[username_env],
+        "password": environ[password_env],
+        "from": environ[from_env],
+        "starttls_ports": [int(value) for value in starttls_ports],
+    }
+
+
+def build_report_email(analysis: dict, report_path: Path, sender: str, recipient: str) -> EmailMessage:
+    title = (analysis.get("paper") or {}).get("title") or "Paper Report"
+    message = EmailMessage()
+    message["Subject"] = f"Paper report: {title}"
+    message["From"] = sender
+    message["To"] = recipient
+    message.set_content("\n".join([
+        "Attached is the generated research paper report.",
+        "",
+        f"Title: {title}",
+        f"Report file: {report_path.name}",
+        "",
+        "Open the attached HTML file in a browser for the full interactive report.",
+    ]))
+    content_type = mimetypes.guess_type(report_path.name)[0] or "text/html"
+    _, subtype = content_type.split("/", 1)
+    message.add_attachment(
+        report_path.read_text(encoding="utf-8"),
+        subtype=subtype,
+        filename=report_path.name,
+    )
+    return message
+
+
+def send_report_email(
+    analysis: dict,
+    report_path: Path,
+    recipient: str,
+    environ: dict | None = None,
+    config: dict | None = None,
+) -> None:
+    email_config = email_config_from_env(environ, config=config)
+    message = build_report_email(analysis, report_path, email_config["from"], recipient)
+    with smtplib.SMTP(email_config["host"], email_config["port"], timeout=30) as smtp:
+        if email_config["port"] in email_config["starttls_ports"]:
+            smtp.starttls()
+        smtp.login(email_config["username"], email_config["password"])
+        smtp.send_message(message)
+
+
+def resolve_email_recipient(cli_recipient: str | None, environ: dict | None = None) -> str | None:
+    if cli_recipient and cli_recipient.strip():
+        return cli_recipient.strip()
+    if environ is None:
+        environ = os.environ
+    recipient = environ.get("REPORT_EMAIL_TO")
+    return recipient.strip() if recipient and recipient.strip() else None
+
+
+def email_skip_message(environ: dict | None = None) -> str:
+    if environ is None:
+        environ = os.environ
+    if "REPORT_EMAIL_TO" in environ and not (environ.get("REPORT_EMAIL_TO") or "").strip():
+        return "Email delivery skipped: REPORT_EMAIL_TO is blank in .env or environment."
+    return "Email delivery skipped: set REPORT_EMAIL_TO in .env or pass --email-to."
+
+
 CSS = """
 :root {
   --paper: #f7f4ed;
@@ -1545,17 +1680,24 @@ def main():
     parser.add_argument("--input", required=True, help="Path to analysis JSON")
     parser.add_argument("--output", required=True, help="Path for generated HTML")
     parser.add_argument("--slug", default=None, help="Slug for display and stable report identity")
+    parser.add_argument("--email-to", default=None, help="Email the generated report.html to this recipient")
+    parser.add_argument("--config", default=DEFAULT_CONFIG_PATH, type=Path, help="Path to structured generator config JSON")
+    parser.add_argument("--env-file", default=DEFAULT_CONFIG_PATH.parents[1] / ".env", type=Path, help="Path to local .env secrets file")
     args = parser.parse_args()
+
+    config = load_app_config(args.config)
+    load_dotenv(args.env_file)
+    print(env_file_status(args.env_file))
 
     with open(args.input, encoding="utf-8") as f:
         analysis = json.load(f)
 
     if not analysis.get("paper", {}).get("title"):
         print("ERROR: analysis.paper.title is required", file=sys.stderr)
-        sys.exit(1)
+        return 1
     if not analysis.get("headline"):
         print("ERROR: analysis.headline is required", file=sys.stderr)
-        sys.exit(1)
+        return 1
 
     slug = args.slug or analysis.get("slug") or slugify(analysis["paper"]["title"])
     html_text = build_html(analysis, slug)
@@ -1563,7 +1705,22 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(html_text, encoding="utf-8")
     print(f"Wrote {output} ({len(html_text):,} bytes) - slug: {slug}")
+    email_recipient = resolve_email_recipient(args.email_to)
+    if email_recipient:
+        print(f"Email delivery configured for {email_recipient}")
+        try:
+            send_report_email(analysis, output, email_recipient, config=config)
+        except EmailConfigError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
+        except Exception as exc:
+            print(f"ERROR: Email send failed: {exc}", file=sys.stderr)
+            return 1
+        print(f"Emailed report to {email_recipient}")
+    else:
+        print(email_skip_message())
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

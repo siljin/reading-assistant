@@ -17,11 +17,15 @@ fills `analysis.json`.
 
 1. Read `paper-reading-assistant/SKILL.md` and
    `paper-reading-assistant/references/analysis-rubric.md`.
+   Shared workflow defaults live in `paper-reading-assistant/config.json`; keep
+   topic adaptation in `profiles/*.json` unless the user explicitly asks for an
+   alternate config.
 2. Pull exactly one paper:
    ```bash
    python paper-reading-assistant/scripts/pull_paper.py --profile profiles/medical-ai.json
    ```
-   Use a different profile only if the user names one.
+   Use a different profile only if the user names one. Add
+   `--config <path>` only when the user wants a non-default structured config.
 3. Identify the created slug from the command output or from:
    ```bash
    python paper-reading-assistant/scripts/workflow_status.py --latest
@@ -46,6 +50,13 @@ fills `analysis.json`.
      --output papers/<slug>/report.html \
      --slug <slug>
    ```
+   If `REPORT_EMAIL_TO` is set in local `.env` or the environment, this command
+   sends `report.html` as an attachment after the local report is written. Add
+   `--email-to <recipient>` only to override that default recipient. SMTP
+   env-var names and STARTTLS behavior come from
+   `paper-reading-assistant/config.json`; secret values must remain in local
+   `.env` or the environment. The renderer auto-loads repo-root `.env` and also
+   accepts `--env-file <path>`.
 8. Verify:
    ```bash
    python3 -m unittest discover -v

@@ -1,0 +1,58 @@
+{
+  "selection": {
+    "defaults": {
+      "recency_days": 730,
+      "min_year": 2020,
+      "max_results_to_score": 50,
+      "curated_sources": [],
+      "curated_max_weeks": 8
+    },
+    "score_weights": {
+      "relevance": 35,
+      "citation_signal": 17,
+      "recency_trend": 18,
+      "curated_popularity": 10,
+      "source_credibility": 8,
+      "accessibility": 7,
+      "novelty_diversity": 5
+    }
+  },
+  "sources": {
+    "openalex_works_url": "https://api.openalex.org/works",
+    "dair_readme_url": "https://raw.githubusercontent.com/dair-ai/AI-Papers-of-the-Week/main/README.md",
+    "dair_raw_base": "https://raw.githubusercontent.com/dair-ai/AI-Papers-of-the-Week/main",
+    "curated_source_labels": {
+      "dair-ai-weekly": "DAIR AI Papers of the Week"
+    }
+  },
+  "rendering": {
+    "default_output_name": "report.html"
+  },
+  "email": {
+    "provider": "gmail",
+    "providers": {
+      "gmail": {
+        "host": "smtp.gmail.com",
+        "port": 587,
+        "username_placeholder": "your-gmail-address@gmail.com",
+        "password_placeholder": "your-google-app-password",
+        "email_from_placeholder": "your-gmail-address@gmail.com",
+        "email_to_placeholder": "your-delivery-email@example.com",
+        "starttls_ports": [
+          587
+        ]
+      }
+    },
+    "smtp": {
+      "host_env": "REPORT_SMTP_HOST",
+      "port_env": "REPORT_SMTP_PORT",
+      "default_port": 587,
+      "username_env": "REPORT_SMTP_USERNAME",
+      "password_env": "REPORT_SMTP_PASSWORD",
+      "from_env": "REPORT_EMAIL_FROM",
+      "starttls_ports": [
+        587
+      ]
+    }
+  }
+}

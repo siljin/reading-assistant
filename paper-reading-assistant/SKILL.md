@@ -69,7 +69,7 @@ python paper-reading-assistant/scripts/pull_paper.py --profile profiles/<topic>.
 python paper-reading-assistant/scripts/pull_paper.py --profile profiles/<topic>.json
 ```
 
-The puller selects exactly one paper per run using OpenAlex metadata and the profile's relevance constraints. Profiles can optionally include curated sources such as `dair-ai-weekly`, which adds a transparent DAIR.AI trend signal without replacing OpenAlex discovery. It creates `papers/<slug>/source.md`, starter `analysis.json`, and updates `papers/.pulled.json` so recurring runs skip already selected papers. It does not download PDFs or call an LLM API.
+The puller selects exactly one paper per run using OpenAlex metadata and the profile's relevance constraints. Shared defaults, scoring weights, source URLs, and email transport settings live in `paper-reading-assistant/config.json`; use `--config <path>` only when testing an alternate structured config. Profiles should stay domain-specific. Profiles can optionally include curated sources such as `dair-ai-weekly`, which adds a transparent DAIR.AI trend signal without replacing OpenAlex discovery. The puller creates `papers/<slug>/source.md`, starter `analysis.json`, and updates `papers/.pulled.json` so recurring runs skip already selected papers. It does not download PDFs or call an LLM API.
 
 If no existing profile fits, create a compact profile with:
 
@@ -268,6 +268,8 @@ python paper-reading-assistant/scripts/render_report.py \
   --output papers/<slug>/report.html \
   --slug <slug>
 ```
+
+If the user wants email delivery, render first through the same command. If `REPORT_EMAIL_TO` is present in local `.env` or the environment, the report is emailed automatically after rendering; otherwise add `--email-to <recipient>`. `--email-to` overrides `REPORT_EMAIL_TO` for one-off sends. The script reads SMTP environment-variable names and STARTTLS behavior from `paper-reading-assistant/config.json`; by default Gmail host/port come from config and the actual sender values come from `REPORT_SMTP_USERNAME`, `REPORT_SMTP_PASSWORD`, and `REPORT_EMAIL_FROM`. The renderer auto-loads a repo-root `.env` file and supports `--env-file <path>` for local automations. Never store secret values in committed files.
 
 If rendering fails, fix the JSON and re-run. Do not bypass the renderer.
 

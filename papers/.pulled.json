@@ -1,0 +1,54 @@
+{
+  "pulled": [
+    {
+      "canonical_id": "2401.05654",
+      "openalex_id": null,
+      "doi": null,
+      "arxiv_id": "2401.05654",
+      "selected_date": "2026-06-19",
+      "profile": "manual",
+      "score": null,
+      "slug": "amie"
+    },
+    {
+      "canonical_id": "1706.03762",
+      "openalex_id": null,
+      "doi": null,
+      "arxiv_id": "1706.03762",
+      "selected_date": "2026-06-19",
+      "profile": "manual",
+      "score": null,
+      "slug": "attention"
+    },
+    {
+      "canonical_id": "2309.07864",
+      "openalex_id": null,
+      "doi": "10.48550/arXiv.2309.07864",
+      "arxiv_id": "2309.07864",
+      "selected_date": "2026-06-19",
+      "profile": "llm-agents",
+      "score": null,
+      "slug": "llm-agents-survey"
+    },
+    {
+      "canonical_id": "https://openalex.org/W7112437267",
+      "openalex_id": "https://openalex.org/W7112437267",
+      "doi": null,
+      "arxiv_id": null,
+      "selected_date": "2026-06-19",
+      "profile": "customer-support-ai-chatbots",
+      "score": 64.42,
+      "slug": "evaluating-retrieval-strategies-for-domain-specific-rag-syst"
+    },
+    {
+      "canonical_id": "https://openalex.org/W4400324908",
+      "openalex_id": "https://openalex.org/W4400324908",
+      "doi": "https://doi.org/10.1038/s41591-024-03097-1",
+      "arxiv_id": null,
+      "selected_date": "2026-06-20",
+      "profile": "medical-ai",
+      "score": 63.17,
+      "slug": "evaluation-and-mitigation-of-the-limitations-of-large-langua"
+    }
+  ]
+}

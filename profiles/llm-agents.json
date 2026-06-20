@@ -1,0 +1,38 @@
+{
+  "name": "llm-agents",
+  "keywords": [
+    "language model agents",
+    "LLM agents",
+    "tool use",
+    "agentic workflows",
+    "planning with language models",
+    "multi-agent systems"
+  ],
+  "openalex_topics": [
+    "Natural Language Processing",
+    "Artificial Intelligence",
+    "Machine Learning"
+  ],
+  "arxiv_categories": [
+    "cs.AI",
+    "cs.CL",
+    "cs.LG",
+    "cs.MA"
+  ],
+  "must_include": [
+    "agent"
+  ],
+  "must_exclude": [
+    "editorial",
+    "commentary",
+    "letter",
+    "position paper"
+  ],
+  "recency_days": 730,
+  "min_year": 2020,
+  "max_results_to_score": 50,
+  "curated_sources": [
+    "dair-ai-weekly"
+  ],
+  "curated_max_weeks": 8
+}

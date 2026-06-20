@@ -1,0 +1,27 @@
+{
+  "name": "medical-ai",
+  "keywords": [
+    "medical artificial intelligence",
+    "clinical decision support",
+    "diagnostic reasoning",
+    "medical large language models"
+  ],
+  "openalex_topics": [
+    "Medical Artificial Intelligence",
+    "Clinical Decision Support Systems"
+  ],
+  "arxiv_categories": [
+    "cs.AI",
+    "cs.CL",
+    "cs.LG"
+  ],
+  "must_include": [],
+  "must_exclude": [
+    "editorial",
+    "commentary",
+    "letter"
+  ],
+  "recency_days": 730,
+  "min_year": 2020,
+  "max_results_to_score": 50
+}

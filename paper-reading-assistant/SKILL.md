@@ -7,6 +7,14 @@ description: Acquire an academic paper (arXiv link, PDF, OpenReview URL, DOI, or
 
 Turn a paper into a sharp briefing that a newcomer can follow and a practitioner still respects. The report should be concise, visual, skeptical, and useful for real decisions.
 
+## Tone Reminders
+
+- Newcomer-friendly and skeptical at the same time.
+- Pointed over exhaustive.
+- Calibrated claims beat press-release language.
+- Visuals must explain, not decorate.
+- Never include private personal details about non-public individuals.
+
 The core model is:
 
 ```text
@@ -26,18 +34,18 @@ Resolve script paths relative to this skill folder. The repo root is two levels 
 
 ## Workflow
 
-0. **Scaffold** the paper folder.
+0. **Scaffold** the paper folder. _(Automatic when using `pull_paper.py` — only run manually if scaffolding a paper directly.)_
 1. **Acquire** the paper content and save the source pointer or extracted text.
 2. **Extract** bibliographic data, structure, claims, methods, results, limitations, and related work.
 3. **Classify** the paper and choose the best explanation shape.
 4. **Simplify** for a newcomer: analogy, jargon decoder, plain-language summary.
 5. **Analyze** with a skeptical lens using `references/analysis-rubric.md`.
-6. **Build the insight layer** in `analysis.json.insight_dashboard`, `evidence_profile`, `so_what`, and `opportunity_matrix`.
+6. **Build the insight layer** in `analysis.json.insight_dashboard`, `so_what`, and `opportunity_matrix`.
 7. **Plan the report** in `analysis.json.report_plan`.
 8. **Render** the HTML report through `scripts/render_report.py`.
 9. **Present** the headline finding and local path.
 
-Do not hand-write the final HTML. The renderer is the path to `report.html`.
+Do not hand-write the final HTML. The renderer is the path to `report.html`. _(The renderer owns layout versioning — manual HTML breaks on future renderer upgrades.)_
 
 ---
 
@@ -69,7 +77,10 @@ python paper-reading-assistant/scripts/pull_paper.py --profile profiles/<topic>.
 python paper-reading-assistant/scripts/pull_paper.py --profile profiles/<topic>.json
 ```
 
-The puller selects exactly one paper per run using OpenAlex metadata and the profile's relevance constraints. Shared defaults, scoring weights, source URLs, and email transport settings live in `paper-reading-assistant/config.json`; use `--config <path>` only when testing an alternate structured config. Profiles should stay domain-specific. Profiles can optionally include curated sources such as `dair-ai-weekly`, which adds a transparent DAIR.AI trend signal without replacing OpenAlex discovery. The puller creates `papers/<slug>/source.md`, starter `analysis.json`, and updates `papers/.pulled.json` so recurring runs skip already selected papers. It does not download PDFs or call an LLM API.
+- **What it does**: selects exactly one paper per run using OpenAlex metadata scored against the profile's relevance constraints.
+- **Config**: shared defaults, scoring weights, source URLs, and email settings live in `paper-reading-assistant/config.json`; use `--config <path>` only when testing an alternate config. Profiles should stay domain-specific and can include curated sources like `dair-ai-weekly` for a DAIR.AI trend signal.
+- **Dedup**: the puller writes to `papers/.pulled.json` so recurring runs skip already-selected papers.
+- **What it does NOT do**: it does not download PDFs or call an LLM API.
 
 If no existing profile fits, create a compact profile with:
 
@@ -133,7 +144,8 @@ Common archetypes:
 - **benchmark**: task setup -> dataset/eval protocol -> result comparisons -> caveats -> field implications
 - **dataset**: source -> collection pipeline -> coverage/distribution -> bias/risk -> use cases
 - **theory**: problem -> assumptions -> theorem/claim -> intuition -> implications -> open questions
-- **clinical/deployment**: workflow -> study design -> outcomes -> safety gaps -> product/regulatory implications
+- **clinical**: workflow -> study design -> outcomes -> safety gaps -> regulatory implications
+- **product/deployment**: deployment context -> user impact -> operational constraints -> adoption risks -> business implications
 - **survey**: field map -> taxonomy -> consensus -> disagreements -> future directions
 - **systems**: architecture -> workload -> trade-offs -> performance -> operational constraints
 
@@ -164,11 +176,6 @@ Fill the insight blocks that power the early dashboard and so-what layer. The re
       {"label": "Builder readiness", "value": "", "caption": ""}
     ],
     "primary_visuals": []
-  },
-  "evidence_profile": {
-    "claims": [
-      {"claim": "", "support": 0, "risk": 0, "caption": ""}
-    ]
   },
   "so_what": {
     "research": {"headline": "", "implications": [], "open_questions": [], "next_actions": []},
@@ -255,8 +262,8 @@ Match visuals to the paper archetype:
 
 Every report should usually end with:
 
-- **`learning_path`**: three suggested papers for learning the field.
-- **`quiz`**: five MCQs testing paper comprehension, field understanding, business insight, product insight, and general research context.
+- **`learning_path`**: 3 suggested papers for learning the field — one foundational paper, one recent advance, one applied/use-case paper.
+- **`quiz`**: 3–5 MCQs testing paper comprehension, field understanding, business insight, product insight, and general research context. Use fewer for narrow-scope papers.
 
 ## Step 7: Render
 
@@ -277,12 +284,3 @@ If rendering fails, fix the JSON and re-run. Do not bypass the renderer.
 
 Tell the user the headline finding and the `papers/<slug>/report.html` path to open directly in a browser. Keep chat short; the report carries the detail.
 
----
-
-## Tone Reminders
-
-- Newcomer-friendly and skeptical at the same time.
-- Pointed over exhaustive.
-- Calibrated claims beat press-release language.
-- Visuals must explain, not decorate.
-- Never include private personal details about non-public individuals.
